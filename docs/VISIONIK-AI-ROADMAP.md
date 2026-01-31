@@ -8,34 +8,28 @@ Five projects that together form a complete AI-assisted software development eco
 
 ```mermaid
 flowchart TB
-    subgraph Orchestration["🎯 ORCHESTRATION"]
+    subgraph Orchestration["ORCHESTRATION"]
         JTK[JTK Captain]
         JTK --> E1[Ensign Alpha]
         JTK --> E2[Ensign Beta]
         JTK --> E3[Ensign Gamma]
     end
     
-    subgraph Protocol["🔌 PROTOCOL"]
+    subgraph Protocol["PROTOCOL"]
         E1 & E2 & E3 --> Acphast
         Acphast --> Claude[Claude API]
         Acphast --> GPT[GPT-4 API]
         Acphast --> Ollama[Ollama Local]
     end
     
-    subgraph Knowledge["📚 KNOWLEDGE"]
-        Deft[Deft\nStandards & Prefs]
-        vContext[vContext\nMemory & Plans]
-        dashdash[dashdash\nTool Discovery]
+    subgraph Knowledge["KNOWLEDGE"]
+        Deft[Deft - Standards]
+        vContext[vContext - Memory]
+        dashdash[dashdash - Discovery]
     end
     
     Knowledge -.-> Orchestration
     Knowledge -.-> Protocol
-    
-    style JTK fill:#4a9eff
-    style Acphast fill:#9b59b6
-    style Deft fill:#2ecc71
-    style vContext fill:#e74c3c
-    style dashdash fill:#f39c12
 ```
 
 ---
@@ -52,18 +46,13 @@ flowchart TB
 flowchart TB
     subgraph Deft["Deft Hierarchy"]
         direction TB
-        User["user.md\n(Highest Priority)"]
+        User["user.md - Highest Priority"]
         Project["project.md"]
-        Lang["python.md | go.md | typescript.md"]
-        Main["main.md\n(General Guidelines)"]
+        Lang["python.md / go.md / typescript.md"]
+        Main["main.md - General Guidelines"]
         
         User --> Project --> Lang --> Main
     end
-    
-    style User fill:#ff6b6b
-    style Project fill:#feca57
-    style Lang fill:#48dbfb
-    style Main fill:#1dd1a1
 ```
 
 **Key Features:**
@@ -88,7 +77,7 @@ flowchart TB
 ```mermaid
 flowchart TB
     subgraph Captain["JTK Captain"]
-        Parser["Plan Parser\n(vContext)"]
+        Parser["Plan Parser"]
         DAG["DAG Builder"]
         Queue["Task Queue"]
         Dispatch["Work Dispatcher"]
@@ -96,14 +85,9 @@ flowchart TB
         Parser --> DAG --> Queue --> Dispatch
     end
     
-    Dispatch --> E1["Ensign\n(Warp)"]
-    Dispatch --> E2["Ensign\n(Cursor)"]
-    Dispatch --> E3["Ensign\n(Aider)"]
-    
-    style Captain fill:#4a9eff,color:#fff
-    style E1 fill:#2ecc71
-    style E2 fill:#2ecc71
-    style E3 fill:#2ecc71
+    Dispatch --> E1["Ensign - Warp"]
+    Dispatch --> E2["Ensign - Cursor"]
+    Dispatch --> E3["Ensign - Aider"]
 ```
 
 **Key Features:**
@@ -130,22 +114,18 @@ flowchart TB
 ```mermaid
 flowchart LR
     subgraph ShortTerm["Short-term"]
-        Todo["📋 TodoList\n□ Fix bug #123\n☑ Update deps\n□ Write tests"]
+        Todo["TodoList"]
     end
     
     subgraph MediumTerm["Medium-term"]
-        Plan["📁 Plan\nPhase 1: Setup\n  └─ Item 1.1\n  └─ Item 1.2\nPhase 2: Core\n  └─ Item 2.1"]
+        Plan["Plan"]
     end
     
     subgraph LongTerm["Long-term"]
-        Playbook["📖 Playbook\nStrategy: Testing\nPattern: Error\nLearning: Cache"]
+        Playbook["Playbook"]
     end
     
     Todo --> Plan --> Playbook
-    
-    style Todo fill:#48dbfb
-    style Plan fill:#feca57
-    style Playbook fill:#ff6b6b
 ```
 
 **Key Features:**
@@ -172,10 +152,10 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph Methods["Four Access Methods"]
-        CLI["🖥️ CLI\n--ai-help flag\nYAML + Markdown"]
-        Web["🌐 Web\n/llms.txt\nYAML + Markdown"]
-        API["🔗 API\nCross-ref from\nCLI/Web docs"]
-        MCP["🔌 MCP\nai_help method\ndashdash extension"]
+        CLI["CLI: --ai-help"]
+        Web["Web: /llms.txt"]
+        API["API: Cross-ref"]
+        MCP["MCP: ai_help method"]
     end
     
     CLI <--> Web
@@ -184,11 +164,6 @@ flowchart TB
     Web <--> API
     Web <--> MCP
     API <--> MCP
-    
-    style CLI fill:#9b59b6,color:#fff
-    style Web fill:#3498db,color:#fff
-    style API fill:#e74c3c,color:#fff
-    style MCP fill:#2ecc71,color:#fff
 ```
 
 **Key Features:**
@@ -220,7 +195,7 @@ flowchart LR
         A[ACP]
     end
     
-    Core["ACP\nCore"]
+    Core["ACP Core"]
     
     subgraph Back["acphast-back"]
         Anthropic
@@ -231,8 +206,6 @@ flowchart LR
     
     M & R & C & A --> Core
     Core --> Anthropic & OpenAI & Ollama & OtherACP
-    
-    style Core fill:#9b59b6,color:#fff
 ```
 
 **Key Features:**
@@ -256,14 +229,14 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    Dev["👨‍💻 Developer"] --> |"1. Creates"| Plan["vContext Plan"]
+    Dev["Developer"] --> |"1. Creates"| Plan["vContext Plan"]
     Plan --> |"2. Parses"| Captain["JTK Captain"]
-    Captain --> |"3. Assigns tasks"| Ensign["Ensign Workers"]
+    Captain --> |"3. Assigns"| Ensign["Ensign Workers"]
     
     subgraph EnsignWork["Each Ensign"]
         LoadDeft["Load Deft Standards"]
-        DiscoverTools["Discover Tools\n(dashdash)"]
-        CallLLM["Call LLM\n(via Acphast)"]
+        DiscoverTools["Discover Tools via dashdash"]
+        CallLLM["Call LLM via Acphast"]
         Execute["Execute Task"]
         Report["Report Completion"]
         
@@ -274,11 +247,7 @@ flowchart TB
     
     Report --> |"4. Updates"| Captain
     Captain --> |"5. Updates"| TodoList["vContext TodoList"]
-    Captain --> |"6. Captures"| Playbook["vContext Playbook"]
-    
-    style Dev fill:#4a9eff,color:#fff
-    style Captain fill:#2ecc71
-    style Ensign fill:#f39c12
+    Captain --> |"6. Captures"| PlaybookOut["vContext Playbook"]
 ```
 
 ### Integration Matrix
@@ -314,7 +283,7 @@ gantt
     section Q1
     JTK + vContext           :2026-01, 3M
     JTK + Deft               :2026-01, 3M
-    Acphast Core (TS)        :2026-02, 2M
+    Acphast Core TS          :2026-02, 2M
     section Q2
     JTK + Acphast            :2026-04, 3M
     dashdash + Deft          :2026-04, 2M
@@ -329,20 +298,13 @@ gantt
     Visual Graph Editor      :2026-11, 2M
 ```
 
-### Phase 3: Ecosystem
+### Phase 3: Ecosystem (2027+)
 
-```mermaid
-timeline
-    title 2027+ Ecosystem Growth
-    section Public Launch
-        Deft Standard Library : Community contributions
-        vContext Tool Ecosystem : Third-party integrations
-    section Adoption
-        dashdash by Tool Authors : Widespread --ai-help
-        Acphast as Standard : Industry protocol
-    section Scale
-        JTK Cloud Service : Hosted orchestration
-```
+- Public Deft standard library
+- vContext tool ecosystem
+- dashdash adoption by tool authors
+- Acphast as industry standard
+- JTK cloud service
 
 ---
 
@@ -354,16 +316,14 @@ timeline
 
 ```mermaid
 flowchart LR
-    subgraph Today["❌ Today"]
-        direction TB
+    subgraph Today["Today"]
         T1["Lost context"]
-        T2["Re-explain preferences"]
+        T2["Re-explain prefs"]
         T3["Manual coordination"]
         T4["Vendor lock-in"]
     end
     
-    subgraph Future["✅ With Ecosystem"]
-        direction TB
+    subgraph Future["With Ecosystem"]
         F1["Deft: Consistent standards"]
         F2["vContext: Persistent memory"]
         F3["JTK: Auto parallelization"]
@@ -371,10 +331,7 @@ flowchart LR
         F5["dashdash: Discover tools"]
     end
     
-    Today --> |"Transform"| Future
-    
-    style Today fill:#e74c3c,color:#fff
-    style Future fill:#2ecc71,color:#fff
+    Today --> Future
 ```
 
 **The result:** An AI-augmented development environment where:
@@ -427,22 +384,13 @@ jtk mission watch
 
 ```mermaid
 flowchart TB
-    subgraph Stack["The Complete Stack"]
-        direction TB
-        L1["🎯 Orchestration: JTK"]
-        L2["🔌 Protocol: Acphast"]
-        L3["📏 Standards: Deft"]
-        L4["🧠 Memory: vContext"]
-        L5["🔍 Discovery: dashdash"]
-        
-        L1 --> L2 --> L3 --> L4 --> L5
-    end
+    L1["Orchestration: JTK"]
+    L2["Protocol: Acphast"]
+    L3["Standards: Deft"]
+    L4["Memory: vContext"]
+    L5["Discovery: dashdash"]
     
-    style L1 fill:#4a9eff,color:#fff
-    style L2 fill:#9b59b6,color:#fff
-    style L3 fill:#2ecc71,color:#fff
-    style L4 fill:#e74c3c,color:#fff
-    style L5 fill:#f39c12,color:#fff
+    L1 --> L2 --> L3 --> L4 --> L5
 ```
 
 Together: **A complete, open, interoperable AI coding system.**
