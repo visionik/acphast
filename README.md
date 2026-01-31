@@ -1,15 +1,17 @@
-# Acphos
+# Acphast
 
-**Universal LLM Protocol Translator**
+**Agent Client Protocol Heterogeneous Adapter Streaming Transceiver**
 
-Acphos is a bidirectional proxy that translates between any LLM protocol—ACP, Anthropic Messages, OpenAI Responses, Chat Completions, and proprietary WebSocket APIs—without losing provider-specific capabilities.
+*Universal LLM Protocol Translator*
+
+Acphast is a bidirectional proxy that translates between any LLM protocol—ACP, Anthropic Messages, OpenAI Responses, Chat Completions, and proprietary WebSocket APIs—without losing provider-specific capabilities.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                           ACPHOS                                 │
+│                           ACPHAST                                 │
 │                                                                  │
 │  ┌─────────────────────┐         ┌─────────────────────┐        │
-│  │    acphos-front     │         │    acphos-back      │        │
+│  │    acphast-front     │         │    acphast-back      │        │
 │  │                     │   ACP   │                     │        │
 │  │  Any Protocol  ───► │ ──────► │ ───►  Any Protocol  │        │
 │  │                     │ (core)  │                     │        │
@@ -30,21 +32,21 @@ Acphos is a bidirectional proxy that translates between any LLM protocol—ACP, 
 ## Example Chains
 
 ```
-Messages API → Acphos → Claude Code
-Responses API → Acphos → Anthropic Messages  
-OpenAI SDK → Acphos → Local Ollama
-Claude Code → Acphos → GPT-4
+Messages API → Acphast → Claude Code
+Responses API → Acphast → Anthropic Messages  
+OpenAI SDK → Acphast → Local Ollama
+Claude Code → Acphast → GPT-4
 ```
 
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
-| [ACPHOS-PROXY-SPEC.md](docs/ACPHOS-PROXY-SPEC.md) | Protocol specification, `_meta` schemas |
-| [ACPHOS-ARCHITECTURE.md](docs/ACPHOS-ARCHITECTURE.md) | Rete.js TypeScript implementation |
-| [ACPHOS-BIDIRECTIONAL.md](docs/ACPHOS-BIDIRECTIONAL.md) | Front/back split architecture |
-| [ACPHOS-GO.md](docs/ACPHOS-GO.md) | Go implementation with channels |
-| [ACPHOS-README.md](docs/ACPHOS-README.md) | Quick start summary |
+| [ACPHAST-PROXY-SPEC.md](docs/ACPHAST-PROXY-SPEC.md) | Protocol specification, `_meta` schemas |
+| [ACPHAST-ARCHITECTURE.md](docs/ACPHAST-ARCHITECTURE.md) | Rete.js TypeScript implementation |
+| [ACPHAST-BIDIRECTIONAL.md](docs/ACPHAST-BIDIRECTIONAL.md) | Front/back split architecture |
+| [ACPHAST-GO.md](docs/ACPHAST-GO.md) | Go implementation with channels |
+| [ACPHAST-README.md](docs/ACPHAST-README.md) | Quick start summary |
 | [VISIONIK-AI-ROADMAP.md](docs/VISIONIK-AI-ROADMAP.md) | Full ecosystem roadmap |
 
 ## Status

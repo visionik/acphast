@@ -1,6 +1,6 @@
-# Acphos Go Implementation
+# Acphast Go Implementation
 
-**Go-based acphos-back using flow-based programming**
+**Go-based acphast-back using flow-based programming**
 
 ## Overview
 
@@ -9,7 +9,7 @@ This implementation uses Go for the high-performance backend processing while ke
 ```
 ┌─────────────────────┐      JSON Config      ┌─────────────────────┐
 │   Rete.js Editor    │ ───────────────────►  │    Go Backend       │
-│   (Optional UI)     │                       │   (acphos-back)     │
+│   (Optional UI)     │                       │   (acphast-back)     │
 └─────────────────────┘                       └─────────────────────┘
 ```
 
@@ -18,9 +18,9 @@ This implementation uses Go for the high-performance backend processing while ke
 ## Project Structure
 
 ```
-acphos/
+acphast/
 ├── cmd/
-│   └── acphos/
+│   └── acphast/
 │       └── main.go              # Entry point
 ├── internal/
 │   ├── acp/
@@ -50,7 +50,7 @@ acphos/
 │       ├── config.go            # Configuration types
 │       └── loader.go            # Load from TOML/YAML
 ├── pkg/
-│   └── acphos/
+│   └── acphast/
 │       └── client.go            # Client library
 ├── graphs/
 │   └── default.json             # Default graph config
@@ -461,7 +461,7 @@ package nodes
 
 import (
 	"context"
-	"github.com/acphos/acphos/internal/graph"
+	"github.com/acphast/acphast/internal/graph"
 )
 
 // BaseNode provides common functionality
@@ -483,8 +483,8 @@ package nodes
 
 import (
 	"context"
-	"github.com/acphos/acphos/internal/acp"
-	"github.com/acphos/acphos/internal/graph"
+	"github.com/acphast/acphast/internal/acp"
+	"github.com/acphast/acphast/internal/graph"
 )
 
 // ReceiverNode receives incoming ACP requests
@@ -539,8 +539,8 @@ import (
 	"context"
 	"encoding/json"
 	
-	"github.com/acphos/acphos/internal/acp"
-	"github.com/acphos/acphos/internal/graph"
+	"github.com/acphast/acphast/internal/acp"
+	"github.com/acphast/acphast/internal/graph"
 )
 
 // BackendSelectorConfig holds selector configuration
@@ -636,9 +636,9 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	
-	"github.com/acphos/acphos/internal/acp"
-	"github.com/acphos/acphos/internal/graph"
-	"github.com/acphos/acphos/internal/nodes"
+	"github.com/acphast/acphast/internal/acp"
+	"github.com/acphast/acphast/internal/graph"
+	"github.com/acphast/acphast/internal/nodes"
 )
 
 // AnthropicConfig holds adapter configuration
@@ -892,9 +892,9 @@ import (
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
 	
-	"github.com/acphos/acphos/internal/acp"
-	"github.com/acphos/acphos/internal/graph"
-	"github.com/acphos/acphos/internal/nodes"
+	"github.com/acphast/acphast/internal/acp"
+	"github.com/acphast/acphast/internal/graph"
+	"github.com/acphast/acphast/internal/nodes"
 )
 
 // OpenAIConfig holds adapter configuration
@@ -1084,9 +1084,9 @@ import (
 	"fmt"
 	"net/http"
 	
-	"github.com/acphos/acphos/internal/acp"
-	"github.com/acphos/acphos/internal/graph"
-	"github.com/acphos/acphos/internal/nodes"
+	"github.com/acphast/acphast/internal/acp"
+	"github.com/acphast/acphast/internal/graph"
+	"github.com/acphast/acphast/internal/nodes"
 )
 
 // OllamaConfig holds adapter configuration
@@ -1237,8 +1237,8 @@ import (
 	"strings"
 	"time"
 	
-	"github.com/acphos/acphos/internal/acp"
-	"github.com/acphos/acphos/internal/graph"
+	"github.com/acphast/acphast/internal/acp"
+	"github.com/acphast/acphast/internal/graph"
 )
 
 // StdioTransport handles JSON-RPC over stdin/stdout
@@ -1393,7 +1393,7 @@ func (t *StdioTransport) sendJSON(v interface{}) {
 ## Main Entry Point
 
 ```go
-// cmd/acphos/main.go
+// cmd/acphast/main.go
 
 package main
 
@@ -1405,8 +1405,8 @@ import (
 	"os/signal"
 	"syscall"
 	
-	"github.com/acphos/acphos/internal/graph"
-	"github.com/acphos/acphos/internal/transport"
+	"github.com/acphast/acphast/internal/graph"
+	"github.com/acphast/acphast/internal/transport"
 )
 
 func main() {
@@ -1434,7 +1434,7 @@ func main() {
 	}()
 	
 	// Start transport
-	log.Println("Acphos started on stdio")
+	log.Println("Acphast started on stdio")
 	if err := t.Start(ctx); err != nil && err != context.Canceled {
 		log.Fatalf("Transport error: %v", err)
 	}
@@ -1508,7 +1508,7 @@ func main() {
 ## go.mod
 
 ```go
-module github.com/acphos/acphos
+module github.com/acphast/acphast
 
 go 1.23
 
@@ -1524,13 +1524,13 @@ require (
 
 ```bash
 # Build
-go build -o acphos ./cmd/acphos
+go build -o acphast ./cmd/acphast
 
 # Run with default graph
-./acphos
+./acphast
 
 # Run with custom graph
-./acphos -graph ./graphs/multi-backend.json
+./acphast -graph ./graphs/multi-backend.json
 
 # Environment variables
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -1559,7 +1559,7 @@ For best of both worlds:
 ```
 ┌─────────────────────┐       JSON Graph       ┌─────────────────────┐
 │   Rete.js Editor    │ ◄───────────────────►  │   Go Backend        │
-│   (Browser)         │      (export/import)   │   (acphos)          │
+│   (Browser)         │      (export/import)   │   (acphast)          │
 └─────────────────────┘                        └─────────────────────┘
          │                                              │
          │ Design graphs visually                       │ Execute at scale

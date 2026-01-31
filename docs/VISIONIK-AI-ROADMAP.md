@@ -31,7 +31,7 @@ Five projects that together form a complete AI-assisted software development eco
 │  ┌──────────────┼─────────────────┼─────────────────┼───────────────────────┐    │
 │  │              ▼                 ▼                 ▼     PROTOCOL          │    │
 │  │         ┌─────────────────────────────────────────────┐                  │    │
-│  │         │                  ACPHOS                      │                  │    │
+│  │         │                  ACPHAST                      │                  │    │
 │  │         │         (Universal Protocol Translator)      │                  │    │
 │  │         └─────────────────────┬───────────────────────┘                  │    │
 │  │                               │                                          │    │
@@ -90,7 +90,7 @@ deft/
 
 **Integration Points:**
 - JTK ensigns load Deft standards before executing tasks
-- Acphos can inject Deft system prompts into LLM requests
+- Acphast can inject Deft system prompts into LLM requests
 - vContext plans can reference Deft workflows
 
 ---
@@ -134,7 +134,7 @@ deft/
 **Integration Points:**
 - Reads vContext plans for task definitions
 - Applies Deft standards to each ensign
-- Routes through Acphos for LLM backend flexibility
+- Routes through Acphast for LLM backend flexibility
 - Uses dashdash for tool discovery
 
 ---
@@ -178,7 +178,7 @@ vContext Document Types:
 - JTK parses vContext plans for orchestration
 - Deft workflows can output vContext todos
 - Playbooks accumulate learnings from JTK missions
-- Acphos can include vContext in LLM context
+- Acphast can include vContext in LLM context
 
 ---
 
@@ -222,12 +222,12 @@ Four Access Methods:
 **Integration Points:**
 - Deft skills can reference dashdash for tool usage
 - JTK ensigns discover tools via dashdash
-- Acphos can route to MCP servers discovered via dashdash
+- Acphast can route to MCP servers discovered via dashdash
 - vContext playbooks can store tool learnings
 
 ---
 
-### 5. Acphos — Protocol Translation
+### 5. Acphast — Protocol Translation
 
 **What:** Universal proxy between any LLM protocols.
 
@@ -235,10 +235,10 @@ Four Access Methods:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                         ACPHOS                               │
+│                         ACPHAST                               │
 │                                                              │
 │   ┌─────────────────────┐    ┌─────────────────────┐        │
-│   │    acphos-front     │    │     acphos-back     │        │
+│   │    acphast-front     │    │     acphast-back     │        │
 │   │                     │    │                     │        │
 │   │  Messages API  ───► │    │ ───►  Anthropic     │        │
 │   │  Responses API ───► │ ── │ ───►  OpenAI        │        │
@@ -258,7 +258,7 @@ Four Access Methods:
 - Multi-backend routing and load balancing
 
 **Integration Points:**
-- JTK routes all LLM calls through Acphos
+- JTK routes all LLM calls through Acphast
 - Can inject Deft system prompts
 - Supports MCP tools discovered via dashdash
 - Can include vContext in requests
@@ -282,9 +282,9 @@ Four Access Methods:
 │  3. Each ENSIGN receives a task                                              │
 │     └─► Loads DEFT standards for context                                     │
 │     └─► Discovers tools via DASHDASH                                         │
-│     └─► Sends LLM request through ACPHOS                                     │
+│     └─► Sends LLM request through ACPHAST                                     │
 │                                                                              │
-│  4. ACPHOS routes to appropriate backend                                     │
+│  4. ACPHAST routes to appropriate backend                                     │
 │     └─► Injects Deft system prompt                                           │
 │     └─► Translates protocol (e.g., ACP → Anthropic)                          │
 │     └─► Streams response back                                                │
@@ -304,13 +304,13 @@ Four Access Methods:
 
 ### Integration Matrix
 
-| Component | Uses Deft | Uses JTK | Uses vContext | Uses dashdash | Uses Acphos |
+| Component | Uses Deft | Uses JTK | Uses vContext | Uses dashdash | Uses Acphast |
 |-----------|-----------|----------|---------------|---------------|-------------|
 | **Deft** | — | Standards for ensigns | Workflow → todos | Tool usage docs | System prompts |
 | **JTK** | Ensign standards | — | Plan execution | Tool discovery | LLM routing |
 | **vContext** | Workflow refs | Plan format | — | — | Context inclusion |
 | **dashdash** | Skill definitions | Tool for ensigns | — | — | MCP routing |
-| **Acphos** | Prompt injection | Backend for JTK | Context in requests | MCP discovery | — |
+| **Acphast** | Prompt injection | Backend for JTK | Context in requests | MCP discovery | — |
 
 ---
 
@@ -324,7 +324,7 @@ Four Access Methods:
 | **JTK** | 🚧 v0.2 | Stabilize mission orchestration, production testing |
 | **vContext** | 📝 v0.4 | Finalize spec, build reference parsers |
 | **dashdash** | 📝 v0.2 | Implement Go/Cobra integration, test with real tools |
-| **Acphos** | 📝 Design | Implement core engine, build adapters |
+| **Acphast** | 📝 Design | Implement core engine, build adapters |
 
 ### Phase 2: Integration
 
@@ -332,12 +332,12 @@ Four Access Methods:
 Q1 2026:
 ├── JTK + vContext: Native plan execution
 ├── JTK + Deft: Ensign standard loading
-└── Acphos core: TypeScript implementation
+└── Acphast core: TypeScript implementation
 
 Q2 2026:
-├── JTK + Acphos: LLM routing integration
+├── JTK + Acphast: LLM routing integration
 ├── dashdash + Deft: Auto-generate skill files
-└── Acphos adapters: Anthropic, OpenAI, Ollama
+└── Acphast adapters: Anthropic, OpenAI, Ollama
 
 Q3 2026:
 ├── Full integration testing
@@ -346,7 +346,7 @@ Q3 2026:
 
 Q4 2026:
 ├── Production deployment
-├── Acphos Go implementation
+├── Acphast Go implementation
 └── Visual graph editor
 ```
 
@@ -357,7 +357,7 @@ Q4 2026:
 ├── Public Deft standard library
 ├── vContext tool ecosystem
 ├── dashdash adoption by tool authors
-├── Acphos as industry standard
+├── Acphast as industry standard
 └── JTK cloud service
 ```
 
@@ -372,7 +372,7 @@ Q4 2026:
 1. **Deft** ensures consistent quality across all AI interactions
 2. **vContext** maintains structured memory across sessions and tools
 3. **dashdash** enables any AI to discover and use any tool
-4. **Acphos** lets you use any AI backend without lock-in
+4. **Acphast** lets you use any AI backend without lock-in
 5. **JTK** coordinates parallel agents for complex projects
 
 **The result:** An AI-augmented development environment where:
@@ -392,7 +392,7 @@ Q4 2026:
 | JTK | [visionik/jtk](https://github.com/visionik/jtk) | Parallel orchestration |
 | vContext | [visionik/vcontext](https://github.com/visionik/vcontext) | Memory specification |
 | dashdash | [visionik/dashdash](https://github.com/visionik/dashdash) | Tool discovery |
-| Acphos | [visionik/acphos](https://github.com/visionik/acphos) | Protocol translation |
+| Acphast | [visionik/acphast](https://github.com/visionik/acphast) | Protocol translation |
 
 ---
 
@@ -426,7 +426,7 @@ jtk mission watch
 | Layer | Project | Purpose |
 |-------|---------|---------|
 | **Orchestration** | JTK | Coordinate parallel agents |
-| **Protocol** | Acphos | Translate between LLM APIs |
+| **Protocol** | Acphast | Translate between LLM APIs |
 | **Standards** | Deft | Define how to code |
 | **Memory** | vContext | Structure agent work |
 | **Discovery** | dashdash | Find and use tools |

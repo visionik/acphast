@@ -1,22 +1,22 @@
-# Acphos Bidirectional Architecture
+# Acphast Bidirectional Architecture
 
 **Universal LLM Protocol Translator**
 
 ## Overview
 
-Acphos is a bidirectional protocol translator with two complementary halves:
+Acphast is a bidirectional protocol translator with two complementary halves:
 
-- **acphos-front**: Ingests any LLM interface format → converts to internal ACP
-- **acphos-back**: Takes internal ACP → outputs to any LLM interface format
+- **acphast-front**: Ingests any LLM interface format → converts to internal ACP
+- **acphast-back**: Takes internal ACP → outputs to any LLM interface format
 
 This enables any-to-any protocol translation through a unified ACP core.
 
 ```
-                           ACPHOS
+                           ACPHAST
 ┌──────────────────────────────────────────────────────────────────┐
 │                                                                  │
 │   ┌──────────────────┐              ┌──────────────────┐        │
-│   │   acphos-front   │              │   acphos-back    │        │
+│   │   acphast-front   │              │   acphast-back    │        │
 │   │                  │              │                  │        │
 │   │  Ingest any      │     ACP      │  Output to any   │        │
 │   │  protocol        │ ──────────►  │  protocol        │        │
@@ -36,7 +36,7 @@ This enables any-to-any protocol translation through a unified ACP core.
 
 ## Supported Protocols
 
-| Protocol | acphos-front (Ingest) | acphos-back (Output) |
+| Protocol | acphast-front (Ingest) | acphast-back (Output) |
 |----------|----------------------|---------------------|
 | **ACP** (Agent Client Protocol) | ✅ | ✅ |
 | **Anthropic Messages API** | ✅ | ✅ |
@@ -54,10 +54,10 @@ This enables any-to-any protocol translation through a unified ACP core.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                                    ACPHOS                                        │
+│                                    ACPHAST                                        │
 │                                                                                  │
 │  ┌─────────────────────────────────────────────────────────────────────────┐    │
-│  │                           acphos-front                                   │    │
+│  │                           acphast-front                                   │    │
 │  │                                                                          │    │
 │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐        │    │
 │  │  │  Messages   │ │  Responses  │ │ Chat Compl. │ │   Custom    │        │    │
@@ -86,7 +86,7 @@ This enables any-to-any protocol translation through a unified ACP core.
 │                                    │                                             │
 │                                    ▼                                             │
 │  ┌─────────────────────────────────────────────────────────────────────────┐    │
-│  │                           acphos-back                                    │    │
+│  │                           acphast-back                                    │    │
 │  │                                                                          │    │
 │  │                     ┌───────────────────────┐                            │    │
 │  │                     │   Back Denormalizer   │                            │    │
@@ -119,7 +119,7 @@ Client (OpenAI SDK)
        │  POST /v1/chat/completions
        ▼
 ┌─────────────────┐
-│  acphos-front   │
+│  acphast-front   │
 │  Chat Compl.    │──────► Internal ACP
 │  Receiver       │
 └─────────────────┘
@@ -132,7 +132,7 @@ Client (OpenAI SDK)
                               │
                               ▼
                    ┌─────────────────┐
-                   │  acphos-back    │
+                   │  acphast-back    │
                    │  Anthropic      │──────► api.anthropic.com
                    │  Adapter        │
                    └─────────────────┘
@@ -152,7 +152,7 @@ Client (Anthropic SDK)
        │  POST /v1/messages
        ▼
 ┌─────────────────┐
-│  acphos-front   │
+│  acphast-front   │
 │  Messages       │──────► Internal ACP
 │  Receiver       │
 └─────────────────┘
@@ -166,7 +166,7 @@ Client (Anthropic SDK)
                               │
                               ▼
                    ┌─────────────────┐
-                   │  acphos-back    │
+                   │  acphast-back    │
                    │  Claude Code    │──────► Claude w/ structured tools
                    │  Adapter        │
                    └─────────────────┘
@@ -186,7 +186,7 @@ IDE / Editor
        │  ACP (stdio)
        ▼
 ┌─────────────────┐
-│  acphos-front   │
+│  acphast-front   │
 │  ACP            │──────► Internal ACP
 │  Receiver       │
 └─────────────────┘
@@ -199,7 +199,7 @@ IDE / Editor
                               │
                               ▼
                    ┌─────────────────┐
-                   │  acphos-back    │
+                   │  acphast-back    │
                    │  Ollama         │──────► localhost:11434
                    │  Adapter        │
                    └─────────────────┘
@@ -219,7 +219,7 @@ Client (OpenAI SDK - Responses)
        │  POST /v1/responses
        ▼
 ┌─────────────────┐
-│  acphos-front   │
+│  acphast-front   │
 │  Responses      │──────► Internal ACP
 │  Receiver       │          │
 └─────────────────┘          │
@@ -234,7 +234,7 @@ Client (OpenAI SDK - Responses)
                               │
                               ▼
                    ┌─────────────────┐
-                   │  acphos-back    │
+                   │  acphast-back    │
                    │  Anthropic      │──────► api.anthropic.com
                    │  Messages       │
                    └─────────────────┘
@@ -254,7 +254,7 @@ IDE
  │  ACP
  ▼
 ┌───────────────┐      ACP       ┌───────────────┐
-│   Acphos A    │ ─────────────► │   Acphos B    │ ────► Claude API
+│   Acphast A    │ ─────────────► │   Acphast B    │ ────► Claude API
 │   (Router)    │                │   (Backend)   │
 └───────────────┘                └───────────────┘
 ```
@@ -266,7 +266,7 @@ IDE
 ## Module Structure
 
 ```
-acphos/
+acphast/
 ├── packages/
 │   ├── core/                    # Shared types, ACP definitions
 │   │   ├── src/
@@ -275,7 +275,7 @@ acphos/
 │   │   │   └── meta.ts
 │   │   └── package.json
 │   │
-│   ├── front/                   # acphos-front: Ingest protocols → ACP
+│   ├── front/                   # acphast-front: Ingest protocols → ACP
 │   │   ├── src/
 │   │   │   ├── index.ts
 │   │   │   ├── receivers/
@@ -287,7 +287,7 @@ acphos/
 │   │   │   └── normalizer.ts
 │   │   └── package.json
 │   │
-│   ├── back/                    # acphos-back: ACP → Output protocols
+│   ├── back/                    # acphast-back: ACP → Output protocols
 │   │   ├── src/
 │   │   │   ├── index.ts
 │   │   │   ├── adapters/
@@ -329,7 +329,7 @@ acphos/
 
 ---
 
-## Receiver Nodes (acphos-front)
+## Receiver Nodes (acphast-front)
 
 ### Messages API Receiver
 
@@ -337,7 +337,7 @@ acphos/
 // packages/front/src/receivers/messages.ts
 
 import { Hono } from 'hono';
-import type { ACPRequest, PipelineMessage } from '@acphos/core';
+import type { ACPRequest, PipelineMessage } from '@acphast/core';
 
 export class MessagesReceiver {
   private app: Hono;
@@ -509,7 +509,7 @@ export class ChatCompletionsReceiver {
 
 ---
 
-## Adapter Nodes (acphos-back)
+## Adapter Nodes (acphast-back)
 
 ### Response Format Adapters
 
@@ -606,7 +606,7 @@ export class ResponseDenormalizer {
 ## Configuration
 
 ```toml
-# acphos.toml
+# acphast.toml
 
 [server]
 host = "0.0.0.0"
@@ -732,7 +732,7 @@ The graph engine connects front receivers to back adapters:
 
 ## API Endpoints Exposed
 
-When running acphos as a server:
+When running acphast as a server:
 
 | Endpoint | Protocol | Description |
 |----------|----------|-------------|
@@ -775,32 +775,32 @@ Some features don't translate cleanly:
 ### 1. Provider Migration
 Switch from OpenAI to Anthropic without changing client code:
 ```
-OpenAI SDK → acphos → Anthropic API
+OpenAI SDK → acphast → Anthropic API
 ```
 
 ### 2. Local Development
 Run Claude Code UX against local Ollama:
 ```
-Claude Code → acphos → Ollama (localhost)
+Claude Code → acphast → Ollama (localhost)
 ```
 
 ### 3. Cost Optimization
 Route simple queries to cheap models, complex to expensive:
 ```
-Any Client → acphos → [Router] → GPT-4.1-mini (simple)
+Any Client → acphast → [Router] → GPT-4.1-mini (simple)
                               → Claude Opus (complex)
 ```
 
 ### 4. Unified API Gateway
 Expose single API, route to multiple backends:
 ```
-Internal Apps → acphos → Anthropic / OpenAI / Azure / Bedrock
+Internal Apps → acphast → Anthropic / OpenAI / Azure / Bedrock
 ```
 
 ### 5. Protocol Bridge
 Connect incompatible systems:
 ```
-Legacy Chat Completions Client → acphos → Modern Responses API
+Legacy Chat Completions Client → acphast → Modern Responses API
 ```
 
 ---
@@ -809,8 +809,8 @@ Legacy Chat Completions Client → acphos → Modern Responses API
 
 | Component | Role |
 |-----------|------|
-| **acphos-front** | Ingest any protocol → Internal ACP |
-| **acphos-back** | Internal ACP → Output any protocol |
+| **acphast-front** | Ingest any protocol → Internal ACP |
+| **acphast-back** | Internal ACP → Output any protocol |
 | **ACP Core** | Routing, meta processing, capability gating |
 | **Rete.js Graph** | Visual configuration, dynamic routing |
 

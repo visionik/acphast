@@ -1,14 +1,14 @@
-# Acphos
+# Acphast
 
 **ACP Proxy using Rete.js filter graph architecture**
 
 ## Overview
 
-Acphos is a universal proxy that lets any ACP-speaking agent communicate with any LLM backend—Anthropic, OpenAI, Ollama, or other ACP agents—without losing provider-specific capabilities.
+Acphast is a universal proxy that lets any ACP-speaking agent communicate with any LLM backend—Anthropic, OpenAI, Ollama, or other ACP agents—without losing provider-specific capabilities.
 
 ```
 ┌─────────┐      ACP       ┌─────────────────────────────────────────────┐      Native API      ┌──────────┐
-│  IDE    │ ◄────────────► │                  Acphos                     │ ◄──────────────────► │ Backend  │
+│  IDE    │ ◄────────────► │                  Acphast                     │ ◄──────────────────► │ Backend  │
 │ Editor  │    stdio/HTTP  │  (Rete.js filter graph)                     │   REST/WS/stdio      │  LLM     │
 └─────────┘                └─────────────────────────────────────────────┘                      └──────────┘
 ```
@@ -32,7 +32,7 @@ ACPReceiver → MetaInjector → BackendSelector → [Adapters] → UsageAggrega
 
 | Type | Purpose | Examples |
 |------|---------|----------|
-| `AcphosNode` | Base class with async `process()` | MetaInjector, UsageAggregator |
+| `AcphastNode` | Base class with async `process()` | MetaInjector, UsageAggregator |
 | `StreamingNode` | Yields `AsyncIterable` for LLM streaming | AnthropicAdapter, OpenAIAdapter |
 | `RouterNode` | Conditional branching based on input | BackendSelector, CapabilityGate |
 
@@ -54,14 +54,14 @@ ACPReceiver → MetaInjector → BackendSelector → [Adapters] → UsageAggrega
 ## Project Structure
 
 ```
-acphos/
+acphast/
 ├── src/
 │   ├── index.ts                 # Entry point
 │   ├── engine/
 │   │   ├── engine.ts            # Headless dataflow engine
 │   │   └── visual.ts            # Optional Rete.js visual editor
 │   ├── nodes/
-│   │   ├── base.ts              # AcphosNode, StreamingNode, RouterNode
+│   │   ├── base.ts              # AcphastNode, StreamingNode, RouterNode
 │   │   ├── input/
 │   │   │   └── acp-receiver.ts
 │   │   ├── routing/
@@ -182,7 +182,7 @@ ctx.onUpdate = (notification) => {
 
 1. **Initialize project**
    ```bash
-   mkdir acphos && cd acphos
+   mkdir acphast && cd acphast
    npm init -y
    npm install rete rete-engine @anthropic-ai/sdk openai
    npm install -D typescript @types/node
@@ -207,7 +207,7 @@ ctx.onUpdate = (notification) => {
 ## Related Documents
 
 - [ACP Proxy Specification](./ACP-PROXY-SPEC.md) — Protocol-level details, `_meta` schemas
-- [Acphos Architecture](./ACPHOS-ARCHITECTURE.md) — Full implementation with code
+- [Acphast Architecture](./ACPHAST-ARCHITECTURE.md) — Full implementation with code
 
 ---
 

@@ -1,17 +1,17 @@
-# Acphos Architecture
+# Acphast Architecture
 
 **Rete.js-based ACP Proxy Implementation**
 
 ## Overview
 
-Acphos uses Rete.js as its processing core, treating ACP message translation as a dataflow graph. Each node handles a specific transformation or routing decision.
+Acphast uses Rete.js as its processing core, treating ACP message translation as a dataflow graph. Each node handles a specific transformation or routing decision.
 
 ---
 
 ## 1. Project Structure
 
 ```
-acphos/
+acphast/
 ├── src/
 │   ├── index.ts                 # Entry point
 │   ├── engine/
@@ -196,10 +196,10 @@ import type { PipelineMessage, PipelineContext, StreamingResult } from '../types
 import { Sockets } from '../sockets';
 
 // ─────────────────────────────────────────────────────────────
-// Base Acphos Node
+// Base Acphast Node
 // ─────────────────────────────────────────────────────────────
 
-export abstract class AcphosNode extends ClassicPreset.Node {
+export abstract class AcphastNode extends ClassicPreset.Node {
   abstract process(
     inputs: Record<string, unknown[]>,
     ctx: PipelineContext
@@ -210,7 +210,7 @@ export abstract class AcphosNode extends ClassicPreset.Node {
 // Streaming Node (for LLM adapters)
 // ─────────────────────────────────────────────────────────────
 
-export abstract class StreamingNode extends AcphosNode {
+export abstract class StreamingNode extends AcphastNode {
   abstract processStream(
     inputs: Record<string, unknown[]>,
     ctx: PipelineContext
@@ -234,7 +234,7 @@ export abstract class StreamingNode extends AcphosNode {
 // Router Node (for conditional branching)
 // ─────────────────────────────────────────────────────────────
 
-export abstract class RouterNode extends AcphosNode {
+export abstract class RouterNode extends AcphastNode {
   abstract route(
     inputs: Record<string, unknown[]>,
     ctx: PipelineContext
@@ -250,11 +250,11 @@ export abstract class RouterNode extends AcphosNode {
 // src/nodes/input/acp-receiver.ts
 
 import { ClassicPreset } from 'rete';
-import { AcphosNode } from '../base';
+import { AcphastNode } from '../base';
 import { Sockets } from '../../sockets';
 import type { ACPRequest, PipelineMessage, PipelineContext } from '../../types';
 
-export class ACPReceiverNode extends AcphosNode {
+export class ACPReceiverNode extends AcphastNode {
   constructor() {
     super('ACP Receiver');
     
@@ -366,11 +366,11 @@ export class BackendSelectorNode extends RouterNode {
 // src/nodes/routing/capability-gate.ts
 
 import { ClassicPreset } from 'rete';
-import { AcphosNode } from '../base';
+import { AcphastNode } from '../base';
 import { Sockets } from '../../sockets';
 import type { PipelineMessage, PipelineContext, BackendCapabilities } from '../../types';
 
-export class CapabilityGateNode extends AcphosNode {
+export class CapabilityGateNode extends AcphastNode {
   requiredCapabilities: (keyof BackendCapabilities['features'])[];
   
   constructor(capabilities: (keyof BackendCapabilities['features'])[]) {
@@ -792,7 +792,7 @@ export class OpenAIAdapterNode extends StreamingNode {
 // src/nodes/transform/meta-injector.ts
 
 import { ClassicPreset } from 'rete';
-import { AcphosNode } from '../base';
+import { AcphastNode } from '../base';
 import { Sockets } from '../../sockets';
 import type { PipelineMessage, PipelineContext } from '../../types';
 
@@ -803,7 +803,7 @@ interface MetaInjectorConfig {
   defaults: Record<string, unknown>;
 }
 
-export class MetaInjectorNode extends AcphosNode {
+export class MetaInjectorNode extends AcphastNode {
   config: MetaInjectorConfig;
   
   constructor(config: MetaInjectorConfig) {
@@ -845,7 +845,7 @@ export class MetaInjectorNode extends AcphosNode {
 // src/nodes/transform/usage-aggregator.ts
 
 import { ClassicPreset } from 'rete';
-import { AcphosNode } from '../base';
+import { AcphastNode } from '../base';
 import { Sockets } from '../../sockets';
 import type { PipelineMessage, PipelineContext, ACPNotification } from '../../types';
 
@@ -857,7 +857,7 @@ interface UsageData {
   cacheWriteTokens?: number;
 }
 
-export class UsageAggregatorNode extends AcphosNode {
+export class UsageAggregatorNode extends AcphastNode {
   private sessionUsage: Map<string, UsageData> = new Map();
   
   constructor() {
@@ -919,11 +919,11 @@ export class UsageAggregatorNode extends AcphosNode {
 // src/nodes/output/acp-responder.ts
 
 import { ClassicPreset } from 'rete';
-import { AcphosNode } from '../base';
+import { AcphastNode } from '../base';
 import { Sockets } from '../../sockets';
 import type { PipelineMessage, PipelineContext, ACPResponse } from '../../types';
 
-export class ACPResponderNode extends AcphosNode {
+export class ACPResponderNode extends AcphastNode {
   private responseCallback?: (response: ACPResponse) => void;
   
   constructor() {
@@ -1002,11 +1002,11 @@ import { ACPResponderNode } from '../nodes/output/acp-responder';
 import type { ACPRequest, ACPResponse, ACPNotification, PipelineContext } from '../types';
 
 type Schemes = ClassicPreset.GetSchemes<
-  AcphosNode,
-  ClassicPreset.Connection<AcphosNode, AcphosNode>
+  AcphastNode,
+  ClassicPreset.Connection<AcphastNode, AcphastNode>
 >;
 
-export class AcphosEngine {
+export class AcphastEngine {
   private editor: NodeEditor<Schemes>;
   private engine: DataflowEngine<Schemes>;
   
@@ -1020,7 +1020,7 @@ export class AcphosEngine {
     this.editor.use(this.engine);
   }
   
-  async initialize(config: AcphosConfig) {
+  async initialize(config: AcphastConfig) {
     // Create nodes
     this.receiverNode = new ACPReceiverNode();
     const metaInjector = new MetaInjectorNode(config.meta);
@@ -1109,7 +1109,7 @@ export class AcphosEngine {
 // Config type
 // ─────────────────────────────────────────────────────────────
 
-interface AcphosConfig {
+interface AcphastConfig {
   meta: {
     proxy: { version: string };
     defaults: Record<string, unknown>;
@@ -1139,14 +1139,14 @@ interface AcphosConfig {
 // src/transport/stdio.ts
 
 import * as readline from 'readline';
-import { AcphosEngine } from '../engine/engine';
+import { AcphastEngine } from '../engine/engine';
 import type { ACPRequest, ACPResponse, ACPNotification } from '../types';
 
 export class StdioTransport {
-  private engine: AcphosEngine;
+  private engine: AcphastEngine;
   private rl: readline.Interface;
   
-  constructor(engine: AcphosEngine) {
+  constructor(engine: AcphastEngine) {
     this.engine = engine;
     
     this.rl = readline.createInterface({
@@ -1338,19 +1338,19 @@ export async function createVisualEditor(container: HTMLElement) {
 
 ---
 
-## 14. Running Acphos
+## 14. Running Acphast
 
 ```typescript
 // src/index.ts
 
-import { AcphosEngine } from './engine/engine';
+import { AcphastEngine } from './engine/engine';
 import { StdioTransport } from './transport/stdio';
 import { loadConfig } from './config/loader';
 
 async function main() {
-  const config = await loadConfig('./acphos.toml');
+  const config = await loadConfig('./acphast.toml');
   
-  const engine = new AcphosEngine();
+  const engine = new AcphastEngine();
   await engine.initialize(config);
   
   // Optionally load a custom graph
@@ -1363,7 +1363,7 @@ async function main() {
   const transport = new StdioTransport(engine);
   transport.start();
   
-  console.error('Acphos started on stdio');
+  console.error('Acphast started on stdio');
 }
 
 main().catch(console.error);
