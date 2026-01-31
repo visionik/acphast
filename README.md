@@ -45,6 +45,7 @@ Claude Code → Acphos → GPT-4
 | [ACPHOS-BIDIRECTIONAL.md](docs/ACPHOS-BIDIRECTIONAL.md) | Front/back split architecture |
 | [ACPHOS-GO.md](docs/ACPHOS-GO.md) | Go implementation with channels |
 | [ACPHOS-README.md](docs/ACPHOS-README.md) | Quick start summary |
+| [VISIONIK-AI-ROADMAP.md](docs/VISIONIK-AI-ROADMAP.md) | Full ecosystem roadmap |
 
 ## Status
 
