@@ -6,56 +6,36 @@
 
 Five projects that together form a complete AI-assisted software development ecosystem:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                  │
-│                         THE COMPLETE AI CODING SYSTEM                            │
-│                                                                                  │
-│  ┌─────────────────────────────────────────────────────────────────────────┐    │
-│  │                            ORCHESTRATION                                 │    │
-│  │                                                                          │    │
-│  │                          ┌───────────┐                                   │    │
-│  │                          │    JTK    │                                   │    │
-│  │                          │ (Captain) │                                   │    │
-│  │                          └─────┬─────┘                                   │    │
-│  │                                │                                         │    │
-│  │              ┌─────────────────┼─────────────────┐                       │    │
-│  │              ▼                 ▼                 ▼                       │    │
-│  │         ┌─────────┐       ┌─────────┐       ┌─────────┐                  │    │
-│  │         │ Ensign  │       │ Ensign  │       │ Ensign  │                  │    │
-│  │         │  Alpha  │       │  Beta   │       │ Gamma   │                  │    │
-│  │         └────┬────┘       └────┬────┘       └────┬────┘                  │    │
-│  │              │                 │                 │                       │    │
-│  └──────────────┼─────────────────┼─────────────────┼───────────────────────┘    │
-│                 │                 │                 │                            │
-│  ┌──────────────┼─────────────────┼─────────────────┼───────────────────────┐    │
-│  │              ▼                 ▼                 ▼     PROTOCOL          │    │
-│  │         ┌─────────────────────────────────────────────┐                  │    │
-│  │         │                  ACPHAST                      │                  │    │
-│  │         │         (Universal Protocol Translator)      │                  │    │
-│  │         └─────────────────────┬───────────────────────┘                  │    │
-│  │                               │                                          │    │
-│  │         ┌─────────────────────┼─────────────────────┐                    │    │
-│  │         ▼                     ▼                     ▼                    │    │
-│  │    ┌─────────┐          ┌─────────┐          ┌─────────┐                 │    │
-│  │    │ Claude  │          │  GPT-4  │          │ Ollama  │                 │    │
-│  │    │  API    │          │   API   │          │ (Local) │                 │    │
-│  │    └─────────┘          └─────────┘          └─────────┘                 │    │
-│  └──────────────────────────────────────────────────────────────────────────┘    │
-│                                                                                  │
-│  ┌──────────────────────────────────────────────────────────────────────────┐    │
-│  │                             KNOWLEDGE                                     │    │
-│  │                                                                           │    │
-│  │   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐                │    │
-│  │   │    DEFT     │     │  VCONTEXT   │     │  DASHDASH   │                │    │
-│  │   │             │     │             │     │             │                │    │
-│  │   │  Standards  │     │   Memory    │     │    Tool     │                │    │
-│  │   │  & Prefs    │     │  & Plans    │     │  Discovery  │                │    │
-│  │   └─────────────┘     └─────────────┘     └─────────────┘                │    │
-│  │                                                                           │    │
-│  └───────────────────────────────────────────────────────────────────────────┘    │
-│                                                                                   │
-└───────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Orchestration["🎯 ORCHESTRATION"]
+        JTK[JTK Captain]
+        JTK --> E1[Ensign Alpha]
+        JTK --> E2[Ensign Beta]
+        JTK --> E3[Ensign Gamma]
+    end
+    
+    subgraph Protocol["🔌 PROTOCOL"]
+        E1 & E2 & E3 --> Acphast
+        Acphast --> Claude[Claude API]
+        Acphast --> GPT[GPT-4 API]
+        Acphast --> Ollama[Ollama Local]
+    end
+    
+    subgraph Knowledge["📚 KNOWLEDGE"]
+        Deft[Deft\nStandards & Prefs]
+        vContext[vContext\nMemory & Plans]
+        dashdash[dashdash\nTool Discovery]
+    end
+    
+    Knowledge -.-> Orchestration
+    Knowledge -.-> Protocol
+    
+    style JTK fill:#4a9eff
+    style Acphast fill:#9b59b6
+    style Deft fill:#2ecc71
+    style vContext fill:#e74c3c
+    style dashdash fill:#f39c12
 ```
 
 ---
@@ -68,18 +48,22 @@ Five projects that together form a complete AI-assisted software development eco
 
 **Role in System:** The "brain" that tells agents HOW to code.
 
-```
-deft/
-├── main.md           ← General AI guidelines
-├── core/
-│   ├── user.md       ← Personal preferences (highest priority)
-│   └── project.md    ← Project-specific rules
-├── languages/
-│   ├── python.md     ← Python standards
-│   ├── go.md         ← Go standards
-│   └── typescript.md ← TypeScript standards
-└── workflows/
-    └── testing.md    ← Testing guidelines
+```mermaid
+flowchart TB
+    subgraph Deft["Deft Hierarchy"]
+        direction TB
+        User["user.md\n(Highest Priority)"]
+        Project["project.md"]
+        Lang["python.md | go.md | typescript.md"]
+        Main["main.md\n(General Guidelines)"]
+        
+        User --> Project --> Lang --> Main
+    end
+    
+    style User fill:#ff6b6b
+    style Project fill:#feca57
+    style Lang fill:#48dbfb
+    style Main fill:#1dd1a1
 ```
 
 **Key Features:**
@@ -101,27 +85,25 @@ deft/
 
 **Role in System:** The "conductor" that coordinates multiple agents.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        JTK Captain                           │
-│                                                              │
-│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐       │
-│   │ Plan Parser │   │ DAG Builder │   │ Task Queue  │       │
-│   │ (vContext)  │   │             │   │             │       │
-│   └──────┬──────┘   └──────┬──────┘   └──────┬──────┘       │
-│          └─────────────────┴─────────────────┘              │
-│                            │                                 │
-│                  ┌─────────┴─────────┐                       │
-│                  │  Work Dispatcher  │                       │
-│                  └─────────┬─────────┘                       │
-└────────────────────────────┼────────────────────────────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        ▼                    ▼                    ▼
-   ┌─────────┐          ┌─────────┐          ┌─────────┐
-   │ Ensign  │          │ Ensign  │          │ Ensign  │
-   │ (Warp)  │          │(Cursor) │          │ (Aider) │
-   └─────────┘          └─────────┘          └─────────┘
+```mermaid
+flowchart TB
+    subgraph Captain["JTK Captain"]
+        Parser["Plan Parser\n(vContext)"]
+        DAG["DAG Builder"]
+        Queue["Task Queue"]
+        Dispatch["Work Dispatcher"]
+        
+        Parser --> DAG --> Queue --> Dispatch
+    end
+    
+    Dispatch --> E1["Ensign\n(Warp)"]
+    Dispatch --> E2["Ensign\n(Cursor)"]
+    Dispatch --> E3["Ensign\n(Aider)"]
+    
+    style Captain fill:#4a9eff,color:#fff
+    style E1 fill:#2ecc71
+    style E2 fill:#2ecc71
+    style E3 fill:#2ecc71
 ```
 
 **Key Features:**
@@ -145,26 +127,25 @@ deft/
 
 **Role in System:** The "memory" that structures agent work.
 
-```
-vContext Document Types:
-
-┌─────────────────────────────────────────────────────────────┐
-│                                                              │
-│   TodoList (Short-term)      Plan (Medium-term)              │
-│   ┌───────────────────┐      ┌───────────────────┐          │
-│   │ □ Fix bug #123    │      │ Phase 1: Setup     │          │
-│   │ ☑ Update deps     │      │   └─ Item 1.1      │          │
-│   │ □ Write tests     │      │   └─ Item 1.2      │          │
-│   └───────────────────┘      │ Phase 2: Core      │          │
-│                              │   └─ Item 2.1      │          │
-│   Playbook (Long-term)       │   └─ Item 2.2      │          │
-│   ┌───────────────────┐      └───────────────────┘          │
-│   │ Strategy: Testing │                                      │
-│   │ Pattern: Error    │                                      │
-│   │ Learning: Cache   │                                      │
-│   └───────────────────┘                                      │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph ShortTerm["Short-term"]
+        Todo["📋 TodoList\n□ Fix bug #123\n☑ Update deps\n□ Write tests"]
+    end
+    
+    subgraph MediumTerm["Medium-term"]
+        Plan["📁 Plan\nPhase 1: Setup\n  └─ Item 1.1\n  └─ Item 1.2\nPhase 2: Core\n  └─ Item 2.1"]
+    end
+    
+    subgraph LongTerm["Long-term"]
+        Playbook["📖 Playbook\nStrategy: Testing\nPattern: Error\nLearning: Cache"]
+    end
+    
+    Todo --> Plan --> Playbook
+    
+    style Todo fill:#48dbfb
+    style Plan fill:#feca57
+    style Playbook fill:#ff6b6b
 ```
 
 **Key Features:**
@@ -188,29 +169,26 @@ vContext Document Types:
 
 **Role in System:** The "interface" that teaches agents about tools.
 
-```
-Four Access Methods:
-
-┌──────────────────────────────────────────────────────────────┐
-│                                                               │
-│   CLI                    Web                                  │
-│   ┌────────────────┐     ┌────────────────┐                  │
-│   │ tool --ai-help │     │ /llms.txt      │                  │
-│   │                │     │                │                  │
-│   │ YAML front     │     │ YAML front     │                  │
-│   │ matter +       │     │ matter +       │                  │
-│   │ markdown       │     │ markdown       │                  │
-│   └────────────────┘     └────────────────┘                  │
-│                                                               │
-│   API                    MCP                                  │
-│   ┌────────────────┐     ┌────────────────┐                  │
-│   │ Cross-ref from │     │ ai_help method │                  │
-│   │ CLI/Web docs   │     │                │                  │
-│   │                │     │ dashdash ext   │                  │
-│   │                │     │ in initialize  │                  │
-│   └────────────────┘     └────────────────┘                  │
-│                                                               │
-└───────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Methods["Four Access Methods"]
+        CLI["🖥️ CLI\n--ai-help flag\nYAML + Markdown"]
+        Web["🌐 Web\n/llms.txt\nYAML + Markdown"]
+        API["🔗 API\nCross-ref from\nCLI/Web docs"]
+        MCP["🔌 MCP\nai_help method\ndashdash extension"]
+    end
+    
+    CLI <--> Web
+    CLI <--> API
+    CLI <--> MCP
+    Web <--> API
+    Web <--> MCP
+    API <--> MCP
+    
+    style CLI fill:#9b59b6,color:#fff
+    style Web fill:#3498db,color:#fff
+    style API fill:#e74c3c,color:#fff
+    style MCP fill:#2ecc71,color:#fff
 ```
 
 **Key Features:**
@@ -233,21 +211,28 @@ Four Access Methods:
 
 **Role in System:** The "translator" that decouples agents from backends.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                         ACPHAST                               │
-│                                                              │
-│   ┌─────────────────────┐    ┌─────────────────────┐        │
-│   │    acphast-front     │    │     acphast-back     │        │
-│   │                     │    │                     │        │
-│   │  Messages API  ───► │    │ ───►  Anthropic     │        │
-│   │  Responses API ───► │ ── │ ───►  OpenAI        │        │
-│   │  Chat Complet. ───► │    │ ───►  Ollama        │        │
-│   │  ACP           ───► │    │ ───►  Other ACP     │        │
-│   │                     │    │                     │        │
-│   └─────────────────────┘    └─────────────────────┘        │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Front["acphast-front"]
+        M[Messages API]
+        R[Responses API]
+        C[Chat Completions]
+        A[ACP]
+    end
+    
+    Core["ACP\nCore"]
+    
+    subgraph Back["acphast-back"]
+        Anthropic
+        OpenAI
+        Ollama
+        OtherACP[Other ACP]
+    end
+    
+    M & R & C & A --> Core
+    Core --> Anthropic & OpenAI & Ollama & OtherACP
+    
+    style Core fill:#9b59b6,color:#fff
 ```
 
 **Key Features:**
@@ -269,37 +254,31 @@ Four Access Methods:
 
 ### Data Flow
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                                                                              │
-│  1. Developer creates a vContext PLAN                                        │
-│     └─► Defines phases, items, dependencies                                  │
-│                                                                              │
-│  2. JTK CAPTAIN parses the plan                                              │
-│     └─► Builds dependency DAG                                                │
-│     └─► Assigns tasks to ensigns                                             │
-│                                                                              │
-│  3. Each ENSIGN receives a task                                              │
-│     └─► Loads DEFT standards for context                                     │
-│     └─► Discovers tools via DASHDASH                                         │
-│     └─► Sends LLM request through ACPHAST                                     │
-│                                                                              │
-│  4. ACPHAST routes to appropriate backend                                     │
-│     └─► Injects Deft system prompt                                           │
-│     └─► Translates protocol (e.g., ACP → Anthropic)                          │
-│     └─► Streams response back                                                │
-│                                                                              │
-│  5. Ensign executes the task                                                 │
-│     └─► Uses tools discovered via dashdash                                   │
-│     └─► Follows Deft standards                                               │
-│     └─► Reports completion to captain                                        │
-│                                                                              │
-│  6. Captain updates vContext TODOLIST                                        │
-│     └─► Marks items complete                                                 │
-│     └─► Triggers dependent tasks                                             │
-│     └─► Captures learnings in PLAYBOOK                                       │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    Dev["👨‍💻 Developer"] --> |"1. Creates"| Plan["vContext Plan"]
+    Plan --> |"2. Parses"| Captain["JTK Captain"]
+    Captain --> |"3. Assigns tasks"| Ensign["Ensign Workers"]
+    
+    subgraph EnsignWork["Each Ensign"]
+        LoadDeft["Load Deft Standards"]
+        DiscoverTools["Discover Tools\n(dashdash)"]
+        CallLLM["Call LLM\n(via Acphast)"]
+        Execute["Execute Task"]
+        Report["Report Completion"]
+        
+        LoadDeft --> DiscoverTools --> CallLLM --> Execute --> Report
+    end
+    
+    Ensign --> EnsignWork
+    
+    Report --> |"4. Updates"| Captain
+    Captain --> |"5. Updates"| TodoList["vContext TodoList"]
+    Captain --> |"6. Captures"| Playbook["vContext Playbook"]
+    
+    style Dev fill:#4a9eff,color:#fff
+    style Captain fill:#2ecc71
+    style Ensign fill:#f39c12
 ```
 
 ### Integration Matrix
@@ -328,37 +307,41 @@ Four Access Methods:
 
 ### Phase 2: Integration
 
-```
-Q1 2026:
-├── JTK + vContext: Native plan execution
-├── JTK + Deft: Ensign standard loading
-└── Acphast core: TypeScript implementation
-
-Q2 2026:
-├── JTK + Acphast: LLM routing integration
-├── dashdash + Deft: Auto-generate skill files
-└── Acphast adapters: Anthropic, OpenAI, Ollama
-
-Q3 2026:
-├── Full integration testing
-├── dashdash + JTK: Tool discovery for ensigns
-└── vContext + Playbooks: Learning accumulation
-
-Q4 2026:
-├── Production deployment
-├── Acphast Go implementation
-└── Visual graph editor
+```mermaid
+gantt
+    title Integration Roadmap 2026
+    dateFormat  YYYY-MM
+    section Q1
+    JTK + vContext           :2026-01, 3M
+    JTK + Deft               :2026-01, 3M
+    Acphast Core (TS)        :2026-02, 2M
+    section Q2
+    JTK + Acphast            :2026-04, 3M
+    dashdash + Deft          :2026-04, 2M
+    Acphast Adapters         :2026-05, 2M
+    section Q3
+    Integration Testing      :2026-07, 2M
+    dashdash + JTK           :2026-07, 2M
+    vContext Playbooks       :2026-08, 2M
+    section Q4
+    Production Deploy        :2026-10, 2M
+    Acphast Go               :2026-10, 2M
+    Visual Graph Editor      :2026-11, 2M
 ```
 
 ### Phase 3: Ecosystem
 
-```
-2027+:
-├── Public Deft standard library
-├── vContext tool ecosystem
-├── dashdash adoption by tool authors
-├── Acphast as industry standard
-└── JTK cloud service
+```mermaid
+timeline
+    title 2027+ Ecosystem Growth
+    section Public Launch
+        Deft Standard Library : Community contributions
+        vContext Tool Ecosystem : Third-party integrations
+    section Adoption
+        dashdash by Tool Authors : Widespread --ai-help
+        Acphast as Standard : Industry protocol
+    section Scale
+        JTK Cloud Service : Hosted orchestration
 ```
 
 ---
@@ -369,11 +352,30 @@ Q4 2026:
 
 **With this ecosystem:**
 
-1. **Deft** ensures consistent quality across all AI interactions
-2. **vContext** maintains structured memory across sessions and tools
-3. **dashdash** enables any AI to discover and use any tool
-4. **Acphast** lets you use any AI backend without lock-in
-5. **JTK** coordinates parallel agents for complex projects
+```mermaid
+flowchart LR
+    subgraph Today["❌ Today"]
+        direction TB
+        T1["Lost context"]
+        T2["Re-explain preferences"]
+        T3["Manual coordination"]
+        T4["Vendor lock-in"]
+    end
+    
+    subgraph Future["✅ With Ecosystem"]
+        direction TB
+        F1["Deft: Consistent standards"]
+        F2["vContext: Persistent memory"]
+        F3["JTK: Auto parallelization"]
+        F4["Acphast: Swap backends"]
+        F5["dashdash: Discover tools"]
+    end
+    
+    Today --> |"Transform"| Future
+    
+    style Today fill:#e74c3c,color:#fff
+    style Future fill:#2ecc71,color:#fff
+```
 
 **The result:** An AI-augmented development environment where:
 - Standards are applied consistently
@@ -423,12 +425,24 @@ jtk mission watch
 
 ## Summary
 
-| Layer | Project | Purpose |
-|-------|---------|---------|
-| **Orchestration** | JTK | Coordinate parallel agents |
-| **Protocol** | Acphast | Translate between LLM APIs |
-| **Standards** | Deft | Define how to code |
-| **Memory** | vContext | Structure agent work |
-| **Discovery** | dashdash | Find and use tools |
+```mermaid
+flowchart TB
+    subgraph Stack["The Complete Stack"]
+        direction TB
+        L1["🎯 Orchestration: JTK"]
+        L2["🔌 Protocol: Acphast"]
+        L3["📏 Standards: Deft"]
+        L4["🧠 Memory: vContext"]
+        L5["🔍 Discovery: dashdash"]
+        
+        L1 --> L2 --> L3 --> L4 --> L5
+    end
+    
+    style L1 fill:#4a9eff,color:#fff
+    style L2 fill:#9b59b6,color:#fff
+    style L3 fill:#2ecc71,color:#fff
+    style L4 fill:#e74c3c,color:#fff
+    style L5 fill:#f39c12,color:#fff
+```
 
 Together: **A complete, open, interoperable AI coding system.**
