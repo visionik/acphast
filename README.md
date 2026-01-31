@@ -40,7 +40,7 @@ Claude Code → Acphos → GPT-4
 
 | Document | Description |
 |----------|-------------|
-| [ACP-PROXY-SPEC.md](docs/ACP-PROXY-SPEC.md) | Protocol specification, `_meta` schemas |
+| [ACPHOS-PROXY-SPEC.md](docs/ACPHOS-PROXY-SPEC.md) | Protocol specification, `_meta` schemas |
 | [ACPHOS-ARCHITECTURE.md](docs/ACPHOS-ARCHITECTURE.md) | Rete.js TypeScript implementation |
 | [ACPHOS-BIDIRECTIONAL.md](docs/ACPHOS-BIDIRECTIONAL.md) | Front/back split architecture |
 | [ACPHOS-GO.md](docs/ACPHOS-GO.md) | Go implementation with channels |
