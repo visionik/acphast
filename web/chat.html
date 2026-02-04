@@ -203,6 +203,8 @@
         Max tokens:
         <input type="text" id="maxTokens" value="1000" style="width: 80px;">
       </label>
+      <button onclick="newChat()" style="background: #666; padding: 0.5rem 1rem;">New Chat</button>
+      <span id="sessionInfo" style="font-size: 0.8rem; opacity: 0.6;"></span>
     </div>
 
     <div id="messages"></div>
@@ -218,6 +220,25 @@
     const SSE_URL = 'http://localhost:6809/events';
     let requestId = 0;
     let isConnected = false;
+    let sessionId = null; // Track current session
+
+    // Start a new chat session
+    function newChat() {
+      sessionId = null;
+      document.getElementById('messages').innerHTML = '';
+      document.getElementById('sessionInfo').textContent = '';
+      addSystemMessage('Started new conversation');
+    }
+
+    // Update session info display
+    function updateSessionInfo() {
+      const info = document.getElementById('sessionInfo');
+      if (sessionId) {
+        info.textContent = `Session: ${sessionId.slice(0, 8)}...`;
+      } else {
+        info.textContent = '';
+      }
+    }
 
     // Check connection on load
     async function checkConnection() {
@@ -364,6 +385,18 @@
         await new Promise(resolve => setTimeout(resolve, 100));
         contentDiv.innerHTML = '<span class="typing">Thinking...</span>';
 
+        // Build request params, including sessionId if we have one
+        const requestParams = {
+          model: model,
+          messages: [
+            { role: 'user', content: userMessage }
+          ],
+          max_tokens: maxTokens
+        };
+        if (sessionId) {
+          requestParams.sessionId = sessionId;
+        }
+
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
@@ -372,13 +405,7 @@
           body: JSON.stringify({
             jsonrpc: '2.0',
             method: 'acp/messages/create',
-            params: {
-              model: model,
-              messages: [
-                { role: 'user', content: userMessage }
-              ],
-              max_tokens: maxTokens
-            },
+            params: requestParams,
             id: currentReqId
           })
         });
@@ -388,6 +415,12 @@
         }
 
         const result = await response.json();
+
+        // Capture sessionId from response for future requests
+        if (result.result?.sessionId) {
+          sessionId = result.result.sessionId;
+          updateSessionInfo();
+        }
 
         // If we streamed content, the final response may have the complete text
         // Only update if we didn't stream or if there's an error

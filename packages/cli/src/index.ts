@@ -7,13 +7,23 @@
 
 import { StdioTransport, HttpTransport } from '@acphast/transport';
 import { NodeRegistry } from '@acphast/nodes';
-import { ACPPassthroughNode, AnthropicAdapterNode } from '@acphast/nodes';
+import {
+  ACPPassthroughNode,
+  AnthropicAdapterNode,
+  AnthropicTranslatorNode,
+  AnthropicClientNode,
+  ResponseNormalizerNode,
+} from '@acphast/nodes';
 import { AcphastEngine } from '@acphast/engine';
+import { MemorySessionRepository } from '@acphast/session';
 import { ConsoleLogger, LogLevel } from './logger.js';
 import { JsonRpcErrorCode } from '@acphast/transport';
-import type { ACPRequest, PipelineMessage, PipelineContext } from '@acphast/core';
+import type { ACPRequest, PipelineMessage, PipelineContext, Session } from '@acphast/core';
 import { randomUUID } from 'crypto';
 import { firstValueFrom, timeout } from 'rxjs';
+
+/** Maximum messages to keep in history (sliding window) */
+const MAX_HISTORY_MESSAGES = 20;
 
 /**
  * Main server class
@@ -24,6 +34,7 @@ class AcphastServer {
   private registry: NodeRegistry;
   private logger: ConsoleLogger;
   private useHttp: boolean;
+  private sessions: MemorySessionRepository;
 
   constructor() {
     // Initialize logger
@@ -39,6 +50,10 @@ class AcphastServer {
     // Register built-in nodes
     this.registry.register(ACPPassthroughNode as any);
     this.registry.register(AnthropicAdapterNode as any);
+    // Anthropic pipeline nodes
+    this.registry.register(AnthropicTranslatorNode as any);
+    this.registry.register(AnthropicClientNode as any);
+    this.registry.register(ResponseNormalizerNode as any);
     
     this.logger.info('Registered nodes', {
       nodes: this.registry.list(),
@@ -48,6 +63,12 @@ class AcphastServer {
     this.engine = new AcphastEngine({
       registry: this.registry,
       logger: this.logger,
+    });
+
+    // Initialize session repository
+    this.sessions = new MemorySessionRepository({
+      maxSessions: 100,
+      ttl: 60 * 60 * 1000, // 1 hour
     });
 
     // Initialize transport
@@ -100,26 +121,53 @@ class AcphastServer {
    * Load default graph
    */
   private async loadDefaultGraph(): Promise<void> {
-    // Create graph with Anthropic adapter for actual LLM responses
+    // Create graph with disaggregated Anthropic pipeline:
+    // Translator -> Client -> Normalizer
     const graph = {
       version: '1.0.0',
       metadata: {
-        name: 'Default Anthropic',
-        description: 'Anthropic Claude adapter',
+        name: 'Anthropic Pipeline',
+        description: 'Disaggregated Anthropic adapter pipeline',
       },
       nodes: [
         {
-          id: 'anthropic',
-          type: 'Anthropic Adapter',
-          label: 'Anthropic Adapter',
+          id: 'translator',
+          type: 'Anthropic Translator',
+          label: 'ACP → Anthropic',
           config: {
-            apiKey: process.env.ANTHROPIC_API_KEY || '',
             defaultModel: 'claude-sonnet-4-20250514',
-            maxTokens: 4096,
+            defaultMaxTokens: 4096,
           },
         },
+        {
+          id: 'client',
+          type: 'Anthropic Client',
+          label: 'Anthropic API',
+          config: {
+            apiKey: process.env.ANTHROPIC_API_KEY || '',
+          },
+        },
+        {
+          id: 'normalizer',
+          type: 'Response Normalizer',
+          label: 'Normalize Response',
+          config: {},
+        },
       ],
-      connections: [],
+      connections: [
+        {
+          source: 'translator',
+          sourceOutput: 'out',
+          target: 'client',
+          targetInput: 'in',
+        },
+        {
+          source: 'client',
+          sourceOutput: 'out',
+          target: 'normalizer',
+          targetInput: 'in',
+        },
+      ],
     };
 
     await this.engine.loadGraph(graph);
@@ -146,57 +194,24 @@ class AcphastServer {
         return;
       }
 
-      // Build ACP request from JSON-RPC envelope
-      // The JSON-RPC method becomes the ACP method, and params become ACP params
-      const acpRequest: ACPRequest = {
-        id: request.id,
-        method: request.method,
-        params: request.params || {},
-      };
-      
-      // Create pipeline context
-      const ctx: PipelineContext = {
-        requestId: randomUUID(),
-        sessionId: (request.params as any)?.sessionId,
-        startTime: Date.now(),
-        meta: {},
-        logger: this.logger.child({ requestId: randomUUID() }),
-        onUpdate: async (notification) => {
-          // Send streaming updates as JSON-RPC notifications
-          // Use the original request.id for SSE routing so clients can connect
-          await this.transport.sendNotification({
-            jsonrpc: '2.0',
-            method: 'acp/notification',
-            params: {
-              ...notification,
-              requestId: String(request.id),
-            },
-          });
-        },
-      };
+      // Handle session/new separately
+      if (request.method === 'acp/session/new') {
+        await this.handleSessionNew(request);
+        return;
+      }
 
-      // Create pipeline message
-      const message: PipelineMessage = {
-        ctx,
-        request: acpRequest,
-      };
+      // Handle messages/create with session support
+      if (request.method === 'acp/messages/create') {
+        await this.handleMessagesCreate(request);
+        return;
+      }
 
-      this.logger.info('Processing request through graph', {
-        method: acpRequest.method,
-        requestId: ctx.requestId,
-      });
-
-      // Execute through graph
-      const result$ = await this.engine.execute('anthropic', message, ctx);
-
-      // Wait for result with timeout
-      const result = await firstValueFrom(result$.pipe(timeout(30000)));
-
-      // Send response
-      await this.transport.sendResponse({
+      // Unknown ACP method
+      await this.transport.sendError({
         jsonrpc: '2.0',
-        result: result.response || {
-          content: [{ type: 'text', text: 'Processing completed' }],
+        error: {
+          code: JsonRpcErrorCode.MethodNotFound,
+          message: `Unknown ACP method: ${request.method}`,
         },
         id: request.id,
       });
@@ -215,6 +230,161 @@ class AcphastServer {
         id: request.id,
       });
     }
+  }
+
+  /**
+   * Handle acp/session/new - create a new conversation session
+   */
+  private async handleSessionNew(request: any): Promise<void> {
+    const session = await this.sessions.create({
+      history: [],
+      metadata: request.params || {},
+    });
+
+    this.logger.info('Created new session', { sessionId: session.id });
+
+    await this.transport.sendResponse({
+      jsonrpc: '2.0',
+      result: { sessionId: session.id },
+      id: request.id,
+    });
+  }
+
+  /**
+   * Handle acp/messages/create - send a message with conversation history
+   */
+  private async handleMessagesCreate(request: any): Promise<void> {
+    const params = request.params || {};
+    let sessionId = params.sessionId as string | undefined;
+    let session: Session | null = null;
+
+    // Get or create session
+    if (sessionId) {
+      session = await this.sessions.get(sessionId);
+      if (!session) {
+        this.logger.warn('Session not found, creating new one', { sessionId });
+        session = await this.sessions.create({ history: [], metadata: {} });
+        sessionId = session.id;
+      }
+    } else {
+      // Auto-create session if none provided
+      session = await this.sessions.create({ history: [], metadata: {} });
+      sessionId = session.id;
+      this.logger.info('Auto-created session', { sessionId });
+    }
+
+    // Get current messages from request
+    const currentMessages = params.messages || [];
+
+    // Build full message history: session history + current messages
+    const historyMessages = session.history.map((entry) => [
+      { role: 'user', content: entry.prompt },
+      { role: 'assistant', content: entry.response },
+    ]).flat().filter(m => m.content); // Remove entries without content
+
+    // Apply sliding window truncation
+    const allMessages = [...historyMessages, ...currentMessages];
+    const truncatedMessages = allMessages.slice(-MAX_HISTORY_MESSAGES);
+
+    if (allMessages.length > truncatedMessages.length) {
+      this.logger.debug('Truncated history', {
+        original: allMessages.length,
+        truncated: truncatedMessages.length,
+      });
+    }
+
+    // Build ACP request with merged history
+    const acpRequest: ACPRequest = {
+      id: request.id,
+      method: request.method,
+      params: {
+        ...params,
+        messages: truncatedMessages,
+        sessionId,
+      },
+    };
+
+    // Create pipeline context
+    const ctx: PipelineContext = {
+      requestId: randomUUID(),
+      sessionId,
+      startTime: Date.now(),
+      meta: {},
+      logger: this.logger.child({ requestId: randomUUID(), sessionId }),
+      onUpdate: async (notification) => {
+        await this.transport.sendNotification({
+          jsonrpc: '2.0',
+          method: 'acp/notification',
+          params: {
+            ...notification,
+            requestId: String(request.id),
+          },
+        });
+      },
+    };
+
+    // Create pipeline message
+    const message: PipelineMessage = {
+      ctx,
+      request: acpRequest,
+    };
+
+    this.logger.info('Processing request through graph', {
+      method: acpRequest.method,
+      requestId: ctx.requestId,
+      sessionId,
+      historyLength: historyMessages.length,
+    });
+
+    // Execute through graph (entry point is the translator node)
+    const result$ = await this.engine.execute('translator', message, ctx);
+
+    // Wait for result with timeout
+    const result = await firstValueFrom(result$.pipe(timeout(30000)));
+
+    // Extract assistant response text
+    const response = result.response as any;
+    const responseContent = response?.content || [];
+    const responseText = responseContent
+      .map((c: any) => c.text || '')
+      .join('\n');
+
+    // Store in session history
+    // Get the user's message (last user message in currentMessages)
+    const userMessage = currentMessages.find((m: any) => m.role === 'user');
+    if (userMessage && responseText) {
+      const historyEntry = {
+        requestId: ctx.requestId,
+        timestamp: Date.now(),
+        prompt: userMessage.content,
+        response: responseText,
+        stopReason: response?.stop_reason,
+        usage: response?.usage ? {
+          inputTokens: response.usage.input_tokens || 0,
+          outputTokens: response.usage.output_tokens || 0,
+          totalTokens: (response.usage.input_tokens || 0) + (response.usage.output_tokens || 0),
+        } : undefined,
+      };
+
+      await this.sessions.update(sessionId, {
+        history: [...session.history, historyEntry],
+      });
+
+      this.logger.debug('Updated session history', {
+        sessionId,
+        historyLength: session.history.length + 1,
+      });
+    }
+
+    // Send response with sessionId
+    await this.transport.sendResponse({
+      jsonrpc: '2.0',
+      result: {
+        ...(response || {}),
+        sessionId,
+      },
+      id: request.id,
+    });
   }
 }
 
