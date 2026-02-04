@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acphast - Visual Graph Editor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #1e1e1e;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: #2d2d2d;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #3d3d3d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4caf50;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      position: relative;
+    }
+
+    #rete-editor {
+      flex: 1;
+      background: #252525;
+      position: relative;
+    }
+
+    .sidebar {
+      width: 300px;
+      background: #2d2d2d;
+      border-left: 1px solid #3d3d3d;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .sidebar h2 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .node-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .node-item {
+      padding: 0.75rem;
+      background: #383838;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .node-item:hover {
+      background: #454545;
+    }
+
+    .node-item-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .node-item-desc {
+      font-size: 0.85rem;
+      color: #999;
+    }
+
+    .info-box {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #1a1a1a;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: #aaa;
+    }
+
+    .rete {
+      width: 100%;
+      height: 100%;
+    }
+
+    .node {
+      background: #383838;
+      border: 2px solid #555;
+      border-radius: 8px;
+      padding: 12px;
+      min-width: 180px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .node .title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #555;
+      color: #fff;
+    }
+
+    .node .input,
+    .node .output {
+      padding: 4px 0;
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+
+    .node .socket {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #555;
+      border-radius: 50%;
+      background: #2d2d2d;
+      cursor: pointer;
+    }
+
+    .node .socket:hover {
+      border-color: #4caf50;
+    }
+
+    .connection {
+      stroke: #4caf50;
+      stroke-width: 2px;
+      fill: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔧 Acphast</h1>
+    <div class="status">
+      <div class="status-dot"></div>
+      <span>Visual Graph Editor (Preview)</span>
+    </div>
+  </header>
+
+  <main>
+    <div id="rete-editor" class="rete"></div>
+    
+    <aside class="sidebar">
+      <h2>Available Nodes</h2>
+      <div class="node-list">
+        <div class="node-item">
+          <div class="node-item-title">ACP Passthrough</div>
+          <div class="node-item-desc">Forward ACP messages without translation</div>
+        </div>
+        <div class="node-item" style="background: #2d4a2d;">
+          <div class="node-item-title">✅ Anthropic Adapter</div>
+          <div class="node-item-desc">Connect to Claude models (Streaming enabled!)</div>
+        </div>
+        <div class="node-item" style="opacity: 0.5;">
+          <div class="node-item-title">OpenAI Adapter</div>
+          <div class="node-item-desc">Connect to GPT models (Coming soon)</div>
+        </div>
+        <div class="node-item" style="opacity: 0.5;">
+          <div class="node-item-title">Router Node</div>
+          <div class="node-item-desc">Conditional routing (Coming soon)</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Status:</strong> Phase 5 In Progress (~60% MVP)<br><br>
+        
+        <strong>Completed:</strong><br>
+        • Core type system<br>
+        • Node registry<br>
+        • Graph engine (Rete.js)<br>
+        • Transport layer (stdio/JSON-RPC)<br>
+        • CLI server<br>
+        • ✨ Anthropic Adapter (streaming!)<br><br>
+        
+        <strong>Available Graphs:</strong><br>
+        • Passthrough (testing)<br>
+        • Claude (Anthropic API)<br><br>
+        
+        <strong>Server:</strong><br>
+        Run with:<br>
+        <code style="background: #252525; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem;">
+          pnpm --filter @acphast/cli start
+        </code>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module">
+    // Simple visualization placeholder
+    // Full Rete.js integration coming in Phase 7
+    
+    const editor = document.getElementById('rete-editor');
+    
+    // Create a simple graph visualization
+    const canvas = document.createElement('div');
+    canvas.style.cssText = `
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      max-width: 600px;
+    `;
+    
+    canvas.innerHTML = `
+      <svg width="400" height="200" style="margin-bottom: 2rem;">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#4caf50" />
+          </marker>
+        </defs>
+        
+        <!-- Node 1: ACP Passthrough -->
+        <rect x="50" y="75" width="120" height="50" rx="8" fill="#383838" stroke="#555" stroke-width="2"/>
+        <text x="110" y="105" fill="#fff" text-anchor="middle" font-size="14" font-weight="600">
+          ACP Passthrough
+        </text>
+        
+        <!-- Arrow (placeholder - no connection yet) -->
+        <line x1="170" y1="100" x2="230" y2="100" stroke="#555" stroke-width="2" stroke-dasharray="5,5" />
+        
+        <!-- Node 2: Coming soon -->
+        <rect x="230" y="75" width="120" height="50" rx="8" fill="#2d2d2d" stroke="#555" stroke-width="2" stroke-dasharray="5,5"/>
+        <text x="290" y="105" fill="#666" text-anchor="middle" font-size="14">
+          Next Node...
+        </text>
+      </svg>
+      
+      <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: #fff;">Graph Editor Preview</h2>
+      <p style="color: #aaa; line-height: 1.6; margin-bottom: 1.5rem;">
+        This is a preview of the Acphast visual graph editor. Full Rete.js integration with
+        drag-and-drop node creation, connection editing, and real-time graph updates will be
+        available in Phase 7.
+      </p>
+      <p style="color: #888; font-size: 0.9rem;">
+        <strong>Currently running:</strong> Passthrough (or load graphs/claude.json)<br>
+        <strong>Server:</strong> stdio JSON-RPC<br>
+        <strong>New:</strong> Real Anthropic Claude streaming!<br>
+        <strong>Status:</strong> MVP ~60% complete
+      </p>
+    `;
+    
+    editor.appendChild(canvas);
+    
+    console.log('Acphast Visual Editor Preview');
+    console.log('Full Rete.js editor coming in Phase 7');
+    console.log('Current graph:', {
+      nodes: [{ id: 'passthrough', type: 'ACPPassthrough' }],
+      connections: []
+    });
+  </script>
+</body>
+</html>

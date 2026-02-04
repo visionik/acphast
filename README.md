@@ -2,122 +2,225 @@
 
 **Agent Client Protocol Heterogeneous Adapter Streaming Transceiver**
 
-*Universal LLM Protocol Translator*
+Universal LLM protocol translator with visual graph editing. Route ACP requests to any backend (Anthropic, OpenAI, Ollama, or other ACP agents) without losing provider-specific features.
 
-Acphast is a bidirectional proxy that translates between any LLM protocol—ACP, Anthropic Messages, OpenAI Responses, Chat Completions, and proprietary WebSocket APIs—without losing provider-specific capabilities.
+## 🎯 Current Status
 
-```mermaid
-flowchart LR
-    subgraph Acphast
-        subgraph Front["acphast-front"]
-            direction TB
-            IN1[Messages API]
-            IN2[Responses API]
-            IN3[Chat Completions]
-            IN4[ACP]
-            IN5[WebSocket]
-        end
-        
-        Core["ACP\n(core)"]
-        
-        subgraph Back["acphast-back"]
-            direction TB
-            OUT1[Anthropic]
-            OUT2[OpenAI]
-            OUT3[Ollama]
-            OUT4[Other ACP]
-            OUT5[WebSocket]
-        end
-        
-        Front --> Core --> Back
-    end
-    
-    Client([Any Client]) --> Front
-    Back --> LLM([Any LLM])
+**MVP Progress: ~50% Complete**
+
+✅ **Phase 1-4 Complete:**
+- Core type system (ACP protocol, pipeline types)
+- Node-based architecture (Rete.js)
+- Graph engine with hot-reload
+- Transport layer (stdio JSON-RPC)
+- CLI server with graph execution
+- Session management
+
+🔄 **In Progress:**
+- Additional node implementations (Anthropic, OpenAI adapters)
+- Full Rete.js visual editor integration
+- HTTP transport with SSE
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm 8+
+
+### Installation
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm -r build
 ```
 
-## Features
+### Run the Server
 
-- **Bidirectional translation** between any supported protocols
-- **Zero capability loss** via `_meta` extensions
-- **Streaming support** for real-time token output
-- **Filter graph architecture** using Rete.js (TypeScript) or channels (Go)
-- **Visual graph editing** (optional) for routing configuration
-- **Multi-backend routing** based on capabilities or explicit selection
-
-## Example Chains
-
-```mermaid
-flowchart LR
-    subgraph Examples
-        direction TB
-        
-        M1[Messages API] --> A1[Acphast] --> C1[Claude Code]
-        M2[Responses API] --> A2[Acphast] --> C2[Anthropic Messages]
-        M3[OpenAI SDK] --> A3[Acphast] --> C3[Local Ollama]
-        M4[Claude Code] --> A4[Acphast] --> C4[GPT-4]
-    end
-    
-    style A1 fill:#4a9eff
-    style A2 fill:#4a9eff
-    style A3 fill:#4a9eff
-    style A4 fill:#4a9eff
+**Option 1: stdio (for CLI tools)**
+```bash
+pnpm --filter @acphast/cli start
 ```
 
-## Architecture
+**Option 2: HTTP (for web apps)**
+```bash
+# Start HTTP server on port 6809
+TRANSPORT=http pnpm --filter @acphast/cli start
 
-```mermaid
-flowchart TB
-    subgraph Input["Input Protocols"]
-        I1[Anthropic Messages]
-        I2[OpenAI Responses]
-        I3[Chat Completions]
-        I4[ACP stdio]
-        I5[WebSocket]
-    end
-    
-    subgraph Processing["Acphast Core"]
-        direction TB
-        Recv[Receiver Node]
-        Norm[Normalizer]
-        Route[Backend Router]
-        
-        Recv --> Norm --> Route
-    end
-    
-    subgraph Adapters["Backend Adapters"]
-        direction TB
-        AA[Anthropic Adapter]
-        OA[OpenAI Adapter]
-        OL[Ollama Adapter]
-        AP[ACP Passthrough]
-    end
-    
-    subgraph Output["Output"]
-        Resp[Response Denormalizer]
-    end
-    
-    I1 & I2 & I3 & I4 & I5 --> Recv
-    Route --> AA & OA & OL & AP
-    AA & OA & OL & AP --> Resp
-    Resp --> Client([Client])
+# Or with Anthropic API key
+TRANSPORT=http ANTHROPIC_API_KEY=sk-ant-... pnpm --filter @acphast/cli start
 ```
 
-## Documentation
+### Try the Web Chat Demo
 
-| Document | Description |
-|----------|-------------|
-| [ACPHAST-PROXY-SPEC.md](docs/ACPHAST-PROXY-SPEC.md) | Protocol specification, `_meta` schemas |
-| [ACPHAST-ARCHITECTURE.md](docs/ACPHAST-ARCHITECTURE.md) | Rete.js TypeScript implementation |
-| [ACPHAST-BIDIRECTIONAL.md](docs/ACPHAST-BIDIRECTIONAL.md) | Front/back split architecture |
-| [ACPHAST-GO.md](docs/ACPHAST-GO.md) | Go implementation with channels |
-| [ACPHAST-README.md](docs/ACPHAST-README.md) | Quick start summary |
-| [VISIONIK-AI-ROADMAP.md](docs/VISIONIK-AI-ROADMAP.md) | Full ecosystem roadmap |
+1. Start the HTTP server:
+```bash
+TRANSPORT=http ANTHROPIC_API_KEY=sk-ant-... pnpm --filter @acphast/cli start
+```
 
-## Status
+2. Open the chat interface:
+```bash
+open web/chat.html
+```
 
-**Draft** — Design phase. Not yet implemented.
+3. Chat with Claude in your browser!
 
-## License
+### View the Status Dashboard
 
-TBD
+```bash
+open web/index.html
+```
+
+Shows project progress, architecture, and available nodes.
+
+## 📦 Project Structure
+
+```
+acphast/
+├── packages/
+│   ├── core/         # Core types (ACP, pipeline, metadata)
+│   ├── config/       # TOML configuration system
+│   ├── nodes/        # Base node classes & registry
+│   ├── engine/       # Rete.js graph execution engine
+│   ├── transport/    # JSON-RPC transport (stdio, HTTP)
+│   ├── session/      # Session management
+│   └── cli/          # CLI server application
+├── web/              # Visual graph editor (preview)
+└── docs/             # Architecture & specs
+```
+
+## 🏗️ Architecture
+
+### Node-Based Pipeline
+
+All components are **visual Rete nodes** that process **RxJS observables**:
+
+```
+ACPReceiver → Router → [Adapters] → Responder
+                 │
+         ┌───────┼───────┐
+         ▼       ▼       ▼
+     Anthropic OpenAI  Ollama
+```
+
+### Node Types
+
+- **AcphastNode**: Base class with `process()` method
+- **StreamingNode**: For LLM adapters with streaming
+- **RouterNode**: Conditional routing logic
+
+### Transport
+
+- **Stdio**: Line-delimited JSON-RPC over stdin/stdout (✅ Complete)
+- **HTTP**: POST `/rpc` + SSE `/events/:id` (⏳ In progress)
+
+## 🎨 Current Graph
+
+The default graph is a simple passthrough that processes requests through the Rete.js engine:
+
+```json
+{
+  "nodes": [
+    { "id": "passthrough", "type": "ACPPassthrough" }
+  ],
+  "connections": []
+}
+```
+
+## 📝 Example Request
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "acp/messages/create",
+  "params": {
+    "model": "claude-sonnet-4",
+    "messages": [
+      { "role": "user", "content": "Hello!" }
+    ]
+  },
+  "id": 1
+}
+```
+
+## 🔧 Development
+
+### Build
+
+```bash
+# Build all packages
+pnpm -r build
+
+# Build specific package
+pnpm --filter @acphast/cli build
+
+# Watch mode
+pnpm --filter @acphast/cli dev
+```
+
+### Test
+
+```bash
+# Run tests (coming soon)
+pnpm test
+```
+
+### Debug
+
+Set `LOG_LEVEL=debug` to see detailed logging:
+
+```bash
+LOG_LEVEL=debug pnpm --filter @acphast/cli start
+```
+
+All logs go to stderr (stdout is reserved for JSON-RPC).
+
+## 📊 Statistics
+
+- **Packages**: 7
+- **Lines of Code**: ~6,000+
+- **Build Time**: ~2.5s
+- **Node Types**: 1 (ACPPassthrough, more coming)
+
+## 🗺️ Roadmap
+
+### Phase 5: Additional Nodes (20% complete)
+- [ ] Anthropic adapter
+- [ ] OpenAI adapter  
+- [ ] Router nodes
+- [x] ACP passthrough
+
+### Phase 6: CLI Enhancements
+- [x] Basic server with graph execution
+- [ ] Command-line arguments
+- [ ] Config file loading
+- [ ] Multiple transport modes
+
+### Phase 7: Visual Editor (0%)
+- [ ] Full Rete.js integration
+- [ ] Drag-and-drop node creation
+- [ ] Live graph editing
+- [ ] Node configuration UI
+
+### Phase 8: Testing & Docs
+- [ ] Unit tests
+- [ ] Integration tests
+- [ ] API documentation
+- [ ] User guides
+
+## 📄 License
+
+MIT
+
+## 🤝 Contributing
+
+This project is in active development. Contributions welcome!
+
+## 📚 Documentation
+
+- [Architecture](docs/RETE-NODE-ARCHITECTURE.md) - Node-based architecture design
+- [Specification](docs/ACPHAST-README.md) - Full ACP proxy specification
+- [Implementation Progress](docs/IMPLEMENTATION-PROGRESS.md) - Detailed progress tracker

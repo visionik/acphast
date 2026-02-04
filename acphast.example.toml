@@ -1,0 +1,61 @@
+# Acphast Configuration Example
+# Copy this file to acphast.toml and customize as needed
+
+[proxy]
+version = "0.1.0"
+defaultBackend = "anthropic"
+
+[backends.anthropic]
+enabled = true
+# API key loaded from ANTHROPIC_API_KEY environment variable
+defaultModel = "claude-sonnet-4-20250514"
+defaultMaxTokens = 8192
+maxRetries = 3
+timeoutMs = 120000
+
+[backends.anthropic.defaults]
+thinking = "enabled"
+maxThinkingTokens = 10000
+
+[backends.openai]
+enabled = false
+# API key loaded from OPENAI_API_KEY environment variable
+# baseURL = "https://api.openai.com/v1"
+defaultModel = "gpt-4.1"
+maxRetries = 3
+timeoutMs = 120000
+
+[backends.openai.defaults]
+reasoningEffort = "medium"
+
+[backends.ollama]
+enabled = false
+baseURL = "http://localhost:11434"
+defaultModel = "llama3.1:8b"
+timeoutMs = 120000
+
+[backends.ollama.defaults]
+contextLength = 131072
+
+# [backends.acp]
+# enabled = false
+# endpoint = "http://localhost:8080"
+# type = "http"
+
+[server]
+port = 6809
+host = "localhost"
+
+[graph]
+defaultGraph = "graphs/default.json"
+graphDir = "graphs"
+
+metadataPolicy = "permissive"  # strict | permissive | strip
+
+[logging]
+level = "info"  # debug | info | warn | error
+pretty = false
+
+[sentry]
+# dsn loaded from SENTRY_DSN environment variable
+environment = "development"

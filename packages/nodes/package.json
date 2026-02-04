@@ -1,0 +1,33 @@
+{
+  "name": "@acphast/nodes",
+  "version": "0.1.0",
+  "description": "Rete.js node implementations for Acphast",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./base": {
+      "types": "./dist/base/index.d.ts",
+      "import": "./dist/base/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@acphast/core": "workspace:*",
+    "@anthropic-ai/sdk": "^0.30.1",
+    "rete": "^2.0.3",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

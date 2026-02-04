@@ -1,0 +1,36 @@
+{
+  "name": "acphast-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent Client Protocol Heterogeneous Adapter Streaming Transceiver",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter \"./packages/**\" --parallel dev",
+    "build": "pnpm -r build",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "typecheck": "pnpm --filter \"./packages/**\" --parallel typecheck",
+    "clean": "pnpm --filter \"./packages/**\" --parallel clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "@vitest/ui": "^1.2.1",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.2.4",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

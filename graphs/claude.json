@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "name": "Claude Adapter",
+    "description": "Direct connection to Anthropic Claude models",
+    "author": "Acphast",
+    "created": "2026-02-04"
+  },
+  "nodes": [
+    {
+      "id": "claude",
+      "type": "Anthropic Adapter",
+      "label": "Claude (Sonnet 4)",
+      "config": {
+        "defaultModel": "claude-sonnet-4-20250514",
+        "maxTokens": 4096,
+        "temperature": 1.0
+      }
+    }
+  ],
+  "connections": []
+}

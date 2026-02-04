@@ -1,0 +1,37 @@
+{
+  "name": "@acphast/cli",
+  "version": "0.1.0",
+  "description": "CLI application for Acphast",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "acphast": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@acphast/core": "workspace:*",
+    "@acphast/config": "workspace:*",
+    "@acphast/nodes": "workspace:*",
+    "@acphast/engine": "workspace:*",
+    "@acphast/transport": "workspace:*",
+    "@acphast/session": "workspace:*",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  }
+}
