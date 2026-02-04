@@ -14,3 +14,9 @@ export * from './meta.js';
 
 // Error types and utilities
 export * from './errors.js';
+
+// Tracing
+export * from './tracing.js';
+
+// Context utilities
+export * from './context.js';

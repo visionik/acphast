@@ -26,6 +26,89 @@ export interface PipelineContext {
 
   /** Logger instance */
   logger?: Logger;
+
+  // Tracing fields
+
+  /** Trace ID for distributed tracing */
+  traceId?: string;
+
+  /** Current span ID */
+  spanId?: string;
+
+  /** Parent span ID */
+  parentSpanId?: string;
+
+  /** Errors that occurred during processing */
+  errors?: PipelineError[];
+
+  /** Timing data for performance tracking */
+  timing?: TimingData;
+}
+
+/**
+ * Pipeline error with context preservation
+ */
+export interface PipelineError {
+  /** Error code */
+  code: string;
+
+  /** Error message */
+  message: string;
+
+  /** Node that produced the error */
+  nodeId?: string;
+
+  /** Node type */
+  nodeType?: string;
+
+  /** Timestamp when error occurred */
+  timestamp: number;
+
+  /** Whether the error is recoverable */
+  recoverable: boolean;
+
+  /** Original error stack */
+  stack?: string;
+
+  /** Additional error context */
+  context?: Record<string, unknown>;
+
+  /** Cause error (for error chaining) */
+  cause?: PipelineError;
+}
+
+/**
+ * Timing data for performance tracking
+ */
+export interface TimingData {
+  /** Node timing entries */
+  nodes: Record<string, NodeTiming>;
+
+  /** Total processing time */
+  totalMs?: number;
+
+  /** Queue wait time */
+  queueMs?: number;
+
+  /** Backend request time */
+  backendMs?: number;
+}
+
+/**
+ * Timing for a single node
+ */
+export interface NodeTiming {
+  /** Node ID */
+  nodeId: string;
+
+  /** Start time */
+  startTime: number;
+
+  /** End time */
+  endTime?: number;
+
+  /** Duration in milliseconds */
+  durationMs?: number;
 }
 
 /**
