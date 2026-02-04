@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acphast Chat Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #1e1e1e;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: #2d2d2d;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #3d3d3d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #888;
+    }
+
+    .status-dot.connected {
+      background: #4caf50;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .message {
+      padding: 1rem;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+
+    .message.user {
+      background: #2d4a7c;
+      align-self: flex-end;
+    }
+
+    .message.assistant {
+      background: #2d2d2d;
+      align-self: flex-start;
+    }
+
+    .message.error {
+      background: #7c2d2d;
+      align-self: center;
+    }
+
+    .message.system {
+      background: #3d3d3d;
+      align-self: center;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .message-role {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .input-container {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input, textarea {
+      flex: 1;
+      padding: 1rem;
+      background: #2d2d2d;
+      border: 1px solid #3d3d3d;
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      resize: none;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #4caf50;
+    }
+
+    button {
+      padding: 1rem 2rem;
+      background: #4caf50;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: #45a049;
+    }
+
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+
+    .config {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #2d2d2d;
+      border-radius: 8px;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .config label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .config input[type="text"] {
+      padding: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .typing {
+      padding: 0.5rem;
+      color: #888;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💬 Acphast Chat Demo</h1>
+    <div class="status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Disconnected</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="config">
+      <label>
+        Model:
+        <input type="text" id="model" value="claude-sonnet-4-20250514" style="width: 250px;">
+      </label>
+      <label>
+        Max tokens:
+        <input type="text" id="maxTokens" value="1000" style="width: 80px;">
+      </label>
+    </div>
+
+    <div id="messages"></div>
+
+    <div class="input-container">
+      <textarea id="input" placeholder="Type your message..." rows="3"></textarea>
+      <button id="send" onclick="sendMessage()">Send</button>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = 'http://localhost:6809/rpc';
+    const SSE_URL = 'http://localhost:6809/events';
+    let requestId = 0;
+    let isConnected = false;
+
+    // Check connection on load
+    async function checkConnection() {
+      try {
+        const response = await fetch('http://localhost:6809/');
+        if (response.ok) {
+          setConnected(true);
+        }
+      } catch (err) {
+        setConnected(false);
+        addSystemMessage('Server not running. Start with: TRANSPORT=http pnpm --filter @acphast/cli start');
+      }
+    }
+
+    // Set up SSE connection for streaming
+    function setupSSE(reqId, onChunk, onComplete, onError) {
+      const eventSource = new EventSource(`${SSE_URL}/${reqId}`);
+      let connected = false;
+
+      eventSource.addEventListener('connected', (e) => {
+        connected = true;
+      });
+
+      eventSource.addEventListener('notification', (e) => {
+        try {
+          const notification = JSON.parse(e.data);
+          const update = notification.params?.params?.update;
+          if (update?.type === 'content_chunk' && update?.content?.text) {
+            onChunk(update.content.text);
+          }
+        } catch (err) {
+          console.error('Failed to parse SSE notification:', err);
+        }
+      });
+
+      eventSource.onerror = (err) => {
+        eventSource.close();
+        if (!connected) {
+          onError(new Error('SSE connection failed'));
+        }
+      };
+
+      return eventSource;
+    }
+
+    function setConnected(connected) {
+      isConnected = connected;
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      
+      if (connected) {
+        dot.classList.add('connected');
+        text.textContent = 'Connected';
+      } else {
+        dot.classList.remove('connected');
+        text.textContent = 'Disconnected';
+      }
+    }
+
+    function addMessage(role, content) {
+      const messages = document.getElementById('messages');
+      const msg = document.createElement('div');
+      msg.className = `message ${role}`;
+      msg.innerHTML = `
+        <div class="message-role">${role}</div>
+        <div>${content}</div>
+      `;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+      return msg;
+    }
+
+    function addSystemMessage(content) {
+      const messages = document.getElementById('messages');
+      const msg = document.createElement('div');
+      msg.className = 'message system';
+      msg.textContent = content;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('input');
+      const model = document.getElementById('model').value;
+      const maxTokens = parseInt(document.getElementById('maxTokens').value) || 1000;
+      const sendBtn = document.getElementById('send');
+      
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      if (!isConnected) {
+        addSystemMessage('Not connected to server');
+        return;
+      }
+
+      // Clear input and disable button
+      input.value = '';
+      sendBtn.disabled = true;
+
+      // Add user message
+      addMessage('user', userMessage);
+
+      // Create assistant message container for streaming
+      const assistantMsg = document.createElement('div');
+      assistantMsg.className = 'message assistant';
+      assistantMsg.innerHTML = '<div class="message-role">assistant</div><div class="content"></div>';
+      const contentDiv = assistantMsg.querySelector('.content');
+      document.getElementById('messages').appendChild(assistantMsg);
+
+      const currentReqId = ++requestId;
+      let streamedText = '';
+      let eventSource = null;
+      let hasStreamed = false;
+
+      try {
+        // Set up SSE connection BEFORE sending request
+        // The server will route streaming updates using the request.id
+        eventSource = new EventSource(`${SSE_URL}/${currentReqId}`);
+        
+        eventSource.addEventListener('notification', (e) => {
+          try {
+            const notification = JSON.parse(e.data);
+            // Handle the nested params structure from the server
+            const innerParams = notification.params?.params;
+            const update = innerParams?.update;
+            if (update?.type === 'content_chunk' && update?.content?.text) {
+              if (!hasStreamed) {
+                contentDiv.textContent = '';
+                hasStreamed = true;
+              }
+              streamedText += update.content.text;
+              contentDiv.textContent = streamedText;
+              document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+            }
+          } catch (err) {
+            console.error('Failed to parse SSE notification:', err);
+          }
+        });
+
+        // Show thinking indicator
+        contentDiv.innerHTML = '<span class="typing">Connecting...</span>';
+
+        // Wait a moment for SSE to connect, then send the request
+        await new Promise(resolve => setTimeout(resolve, 100));
+        contentDiv.innerHTML = '<span class="typing">Thinking...</span>';
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'acp/messages/create',
+            params: {
+              model: model,
+              messages: [
+                { role: 'user', content: userMessage }
+              ],
+              max_tokens: maxTokens
+            },
+            id: currentReqId
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        // If we streamed content, the final response may have the complete text
+        // Only update if we didn't stream or if there's an error
+        if (result.error) {
+          contentDiv.textContent = `Error: ${result.error.message}`;
+          assistantMsg.classList.add('error');
+        } else if (!hasStreamed && result.result && result.result.content) {
+          // Fallback: show complete response if streaming didn't work
+          const text = result.result.content
+            .map(c => c.text || '')
+            .join('\n');
+          contentDiv.textContent = text;
+        }
+      } catch (err) {
+        contentDiv.textContent = `Failed: ${err.message}`;
+        assistantMsg.classList.add('error');
+      } finally {
+        if (eventSource) {
+          eventSource.close();
+        }
+        sendBtn.disabled = false;
+        input.focus();
+        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+      }
+    }
+
+    // Send on Enter (Shift+Enter for new line)
+    document.getElementById('input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Check connection on load
+    checkConnection();
+    
+    // Show welcome message
+    setTimeout(() => {
+      addSystemMessage('Welcome to Acphast Chat Demo! Make sure the server is running with HTTP transport.');
+      addSystemMessage('Command: TRANSPORT=http pnpm --filter @acphast/cli start');
+    }, 500);
+  </script>
+</body>
+</html>
