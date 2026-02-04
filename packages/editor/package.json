@@ -1,0 +1,50 @@
+{
+  "name": "@acphast/editor",
+  "version": "0.1.0",
+  "description": "Visual graph editor for Acphast pipelines",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components": {
+      "import": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@acphast/core": "workspace:*",
+    "@acphast/engine": "workspace:*",
+    "@acphast/nodes": "workspace:*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rete": "^2.0.3",
+    "rete-area-plugin": "^2.0.3",
+    "rete-connection-plugin": "^2.0.2",
+    "rete-react-plugin": "^2.0.5",
+    "rete-render-utils": "^2.0.2",
+    "rxjs": "^7.8.1",
+    "styled-components": "^6.1.8"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}
