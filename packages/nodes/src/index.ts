@@ -17,6 +17,9 @@ export * from './anthropic/index.js';
 // OpenAI pipeline nodes (disaggregated)
 export * from './openai/index.js';
 
+// Pi pipeline nodes (disaggregated)
+export * from './pi/index.js';
+
 // Routing nodes
 export * from './routing/index.js';
 
