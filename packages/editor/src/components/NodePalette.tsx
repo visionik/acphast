@@ -16,8 +16,10 @@ export interface NodePaletteProps {
   nodeTypes: Map<string, NodeMetadata>;
   /** Callback when a node type is selected (for drag-and-drop) */
   onNodeSelect?: (type: string, meta: NodeMetadata) => void;
-  /** Callback when node is dragged */
+  /** Callback when node drag starts */
   onDragStart?: (type: string, meta: NodeMetadata, event: React.DragEvent) => void;
+  /** Callback when node drag ends (drop or cancel) */
+  onDragEnd?: (type: string, meta: NodeMetadata, event: React.DragEvent) => void;
   /** CSS class name */
   className?: string;
 }
@@ -148,6 +150,7 @@ export function NodePalette({
   nodeTypes,
   onNodeSelect,
   onDragStart,
+  onDragEnd,
   className,
 }: NodePaletteProps) {
   // Group nodes by category
@@ -189,9 +192,15 @@ export function NodePalette({
     event.dataTransfer.setData('application/acphast-node', JSON.stringify({ type, meta }));
     event.dataTransfer.effectAllowed = 'copy';
 
-    if (onDragStart) {
-      onDragStart(type, meta, event);
-    }
+    onDragStart?.(type, meta, event);
+  };
+
+  const handleDragEnd = (
+    type: string,
+    meta: NodeMetadata,
+    event: React.DragEvent
+  ) => {
+    onDragEnd?.(type, meta, event);
   };
 
   return (
@@ -211,6 +220,7 @@ export function NodePalette({
                 $color={color}
                 draggable
                 onDragStart={(e) => handleDragStart(type, meta, e)}
+                onDragEnd={(e) => handleDragEnd(type, meta, e)}
                 onClick={() => onNodeSelect?.(type, meta)}
               >
                 <NodeIcon $color={color}>{icon}</NodeIcon>

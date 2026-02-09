@@ -4,7 +4,7 @@
  */
 
 import { NodeEditor, ClassicPreset } from 'rete';
-import { AreaPlugin, AreaExtensions } from 'rete-area-plugin';
+import { AreaPlugin, AreaExtensions, Zoom } from 'rete-area-plugin';
 import { ConnectionPlugin, Presets as ConnectionPresets } from 'rete-connection-plugin';
 import { ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin';
 import { createRoot } from 'react-dom/client';
@@ -85,12 +85,40 @@ export async function createEditor(options: EditorSetupOptions): Promise<EditorI
     accumulating: AreaExtensions.accumulateOnCtrl(),
   });
 
+  // Set zoom handler with reduced intensity (1/10 of default 0.1 = 0.01)
+  area.area.setZoomHandler(new Zoom(0.01));
+
   if (!readOnly) {
     AreaExtensions.simpleNodesOrder(area);
   }
 
   // Track node positions
   const nodePositions = new Map<string, Position>();
+
+  // Add right-click to delete nodes
+  if (!readOnly) {
+    container.addEventListener('contextmenu', async (e) => {
+      e.preventDefault();
+      
+      // Find which node was clicked by checking all node views
+      const nodes = editor.getNodes();
+      for (const node of nodes) {
+        const view = area.nodeViews.get(node.id);
+        if (view && view.element) {
+          const rect = view.element.getBoundingClientRect();
+          if (
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom
+          ) {
+            await removeNode(node.id);
+            return;
+          }
+        }
+      }
+    });
+  }
 
   // Listen for changes
   editor.addPipe((context) => {

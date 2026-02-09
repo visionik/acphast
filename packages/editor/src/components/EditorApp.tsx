@@ -49,15 +49,15 @@ const CanvasWrapper = styled.div`
   position: relative;
 `;
 
-const DropZone = styled.div<{ $isActive: boolean }>`
+const DropZone = styled.div<{ $isActive: boolean; $isHover: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   pointer-events: ${(props) => (props.$isActive ? 'auto' : 'none')};
-  background-color: ${(props) => (props.$isActive ? 'rgba(74, 144, 217, 0.1)' : 'transparent')};
-  border: ${(props) => (props.$isActive ? '2px dashed #4a90d9' : 'none')};
+  background-color: ${(props) => (props.$isHover ? 'rgba(74, 144, 217, 0.1)' : 'transparent')};
+  border: ${(props) => (props.$isHover ? '2px dashed #4a90d9' : 'none')};
   transition: all 0.2s ease;
 `;
 
@@ -66,7 +66,7 @@ const DropZone = styled.div<{ $isActive: boolean }>`
  */
 export function EditorApp({
   registry,
-  initialGraph: _initialGraph, // TODO: Use for initial load
+  initialGraph,
   title = 'Untitled Graph',
   onSave,
   onLoad,
@@ -74,13 +74,16 @@ export function EditorApp({
 }: EditorAppProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDirty, setIsDirty] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const [isPaletteDragActive, setIsPaletteDragActive] = useState(false);
+  const [isDropHover, setIsDropHover] = useState(false);
+  const isPaletteDragRef = useRef(false);
 
   // Get node types from registry
   const nodeTypes = registry.getAllMetadata();
 
   // Use the graph editor hook
   const { editor } = useGraphEditor(containerRef, registry, {
+    initialGraph,
     onChange: useCallback(() => {
       setIsDirty(true);
     }, []),
@@ -140,23 +143,34 @@ export function EditorApp({
     }
   }, [editor, title]);
 
-  // Handle node drop from palette
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    if (e.dataTransfer.types.includes('application/acphast-node')) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
-      setIsDragOver(true);
+  // Palette drop handlers (attached to DropZone overlay only)
+  const handleDropZoneDragEnter = useCallback((e: React.DragEvent) => {
+    if (!isPaletteDragRef.current) return;
+    e.preventDefault();
+    setIsDropHover(true);
+  }, []);
+
+  const handleDropZoneDragOver = useCallback((e: React.DragEvent) => {
+    if (!isPaletteDragRef.current) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }, []);
+
+  const handleDropZoneDragLeave = useCallback((e: React.DragEvent) => {
+    if (!isPaletteDragRef.current) return;
+    if (e.currentTarget === e.target) {
+      setIsDropHover(false);
     }
   }, []);
 
-  const handleDragLeave = useCallback(() => {
-    setIsDragOver(false);
-  }, []);
-
-  const handleDrop = useCallback(
+  const handleDropZoneDrop = useCallback(
     async (e: React.DragEvent) => {
+      if (!isPaletteDragRef.current) return;
+
       e.preventDefault();
-      setIsDragOver(false);
+      setIsDropHover(false);
+      isPaletteDragRef.current = false;
+      setIsPaletteDragActive(false);
 
       if (!editor || !containerRef.current) return;
 
@@ -212,6 +226,15 @@ export function EditorApp({
           <NodePalette
             nodeTypes={nodeTypes}
             onNodeSelect={handleNodeSelect}
+            onDragStart={() => {
+              isPaletteDragRef.current = true;
+              setIsPaletteDragActive(true);
+            }}
+            onDragEnd={() => {
+              isPaletteDragRef.current = false;
+              setIsPaletteDragActive(false);
+              setIsDropHover(false);
+            }}
           />
         )}
 
@@ -219,11 +242,15 @@ export function EditorApp({
           <div
             ref={containerRef}
             style={{ width: '100%', height: '100%' }}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
           />
-          <DropZone $isActive={isDragOver} />
+          <DropZone
+            $isActive={isPaletteDragActive}
+            $isHover={isDropHover}
+            onDragEnter={handleDropZoneDragEnter}
+            onDragOver={handleDropZoneDragOver}
+            onDragLeave={handleDropZoneDragLeave}
+            onDrop={handleDropZoneDrop}
+          />
         </CanvasWrapper>
       </MainArea>
     </AppContainer>

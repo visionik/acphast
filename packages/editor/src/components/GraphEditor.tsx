@@ -170,6 +170,7 @@ export function useGraphEditor(
   ref: React.RefObject<HTMLDivElement>,
   registry: NodeRegistry,
   options?: {
+    initialGraph?: SerializedGraph;
     onChange?: (graph: SerializedGraph) => void;
     readOnly?: boolean;
   }
@@ -179,25 +180,53 @@ export function useGraphEditor(
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!ref.current) return;
+    const container = ref.current;
+    if (!container) return;
+
+    const containerEl: HTMLElement = container;
+
+    // In React StrictMode (dev) and HMR, effects can run multiple times.
+    // Track/destroy any previous editor instance attached to this container.
+    const key = '__acphastEditorInstance__';
+    const prev = (containerEl as unknown as Record<string, unknown>)[key];
+    if (prev && typeof prev === 'object' && 'destroy' in (prev as Record<string, unknown>)) {
+      try {
+        (prev as { destroy: () => void }).destroy();
+      } catch {
+        // ignore
+      }
+    }
+
+    // Ensure container is clean before mounting a new editor
+    containerEl.innerHTML = '';
 
     let destroyed = false;
+    let instance: EditorInstance | null = null;
 
     async function init() {
       try {
         setIsLoading(true);
         setError(null);
 
-        const instance = await createEditor({
-          container: ref.current!,
+        instance = await createEditor({
+          container: containerEl,
           registry,
           onChange: options?.onChange,
           readOnly: options?.readOnly,
         });
 
+        // Attach for future cleanup (StrictMode/HMR)
+        (containerEl as unknown as Record<string, unknown>)[key] = instance;
+
         if (destroyed) {
           instance.destroy();
           return;
+        }
+
+        // Load initial graph if provided
+        if (options?.initialGraph) {
+          await instance.importGraph(options.initialGraph);
+          await instance.zoomToFit();
         }
 
         setEditor(instance);
@@ -214,11 +243,19 @@ export function useGraphEditor(
 
     return () => {
       destroyed = true;
-      if (editor) {
-        editor.destroy();
+
+      if (instance) {
+        try {
+          instance.destroy();
+        } finally {
+          const current = (containerEl as unknown as Record<string, unknown>)[key];
+          if (current === instance) {
+            delete (containerEl as unknown as Record<string, unknown>)[key];
+          }
+        }
       }
     };
-  }, [ref.current, registry, options?.readOnly]);
+  }, [registry, options?.readOnly]);
 
   return { editor, isLoading, error };
 }

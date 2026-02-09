@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
   "metadata": {
-    "name": "Claude Pipeline",
-    "description": "Disaggregated Anthropic Claude pipeline",
+    "name": "OpenAI Pipeline",
+    "description": "Disaggregated OpenAI pipeline",
     "author": "Acphast",
     "created": "2026-02-04"
   },
@@ -15,22 +15,22 @@
     },
     {
       "id": "translator",
-      "type": "Anthropic Translator",
+      "type": "OpenAI Translator",
       "position": { "x": 100, "y": 200 },
       "config": {
-        "defaultModel": "claude-sonnet-4-20250514",
+        "defaultModel": "gpt-4-turbo",
         "defaultMaxTokens": 4096
       }
     },
     {
       "id": "client",
-      "type": "Anthropic Client",
+      "type": "OpenAI Client",
       "position": { "x": 400, "y": 200 },
       "config": {}
     },
     {
       "id": "normalizer",
-      "type": "Response Normalizer",
+      "type": "OpenAI Normalizer",
       "position": { "x": 700, "y": 200 },
       "config": {
         "includeModel": true,

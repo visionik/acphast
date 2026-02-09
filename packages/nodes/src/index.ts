@@ -13,3 +13,12 @@ export * from './adapters/anthropic.js';
 
 // Anthropic pipeline nodes (disaggregated)
 export * from './anthropic/index.js';
+
+// OpenAI pipeline nodes (disaggregated)
+export * from './openai/index.js';
+
+// Routing nodes
+export * from './routing/index.js';
+
+// Visual marker nodes
+export * from './markers/index.js';
