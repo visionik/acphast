@@ -5,7 +5,7 @@
  * Main entry point for the Acphast server
  */
 
-import { StdioTransport, HttpTransport } from '@acphast/transport';
+import { StdioTransport, HttpTransport, PiRpcTransport } from '@acphast/transport';
 import { NodeRegistry } from '@acphast/nodes';
 import {
   ACPPassthroughNode,
@@ -29,11 +29,12 @@ const MAX_HISTORY_MESSAGES = 20;
  * Main server class
  */
 class AcphastServer {
-  private transport: StdioTransport | HttpTransport;
+  private transport: StdioTransport | HttpTransport | PiRpcTransport;
   private engine: AcphastEngine;
   private registry: NodeRegistry;
   private logger: ConsoleLogger;
   private useHttp: boolean;
+  private usePiRpc: boolean;
   private sessions: MemorySessionRepository;
 
   constructor() {
@@ -41,8 +42,9 @@ class AcphastServer {
     const logLevel = process.env.LOG_LEVEL === 'debug' ? LogLevel.DEBUG : LogLevel.INFO;
     this.logger = new ConsoleLogger(logLevel);
 
-    // Check if HTTP mode
+    // Check transport mode
     this.useHttp = process.env.TRANSPORT === 'http' || process.argv.includes('--http');
+    this.usePiRpc = process.env.TRANSPORT === 'pi-rpc' || process.argv.includes('--pi-rpc');
 
     // Initialize node registry
     this.registry = new NodeRegistry();
@@ -72,7 +74,11 @@ class AcphastServer {
     });
 
     // Initialize transport
-    if (this.useHttp) {
+    if (this.usePiRpc) {
+      this.transport = new PiRpcTransport({
+        logger: this.logger,
+      });
+    } else if (this.useHttp) {
       const port = parseInt(process.env.PORT || '6809', 10);
       this.transport = new HttpTransport({
         port,
