@@ -2,24 +2,25 @@
 
 **Agent Client Protocol Heterogeneous Adapter Streaming Transceiver**
 
-Universal LLM protocol translator with visual graph editing. Route ACP requests to any backend (Anthropic, OpenAI, Ollama, or other ACP agents) without losing provider-specific features.
+Universal LLM protocol bridge with bidirectional support. Bridge between different protocols (ACP, Pi RPC) and route to any backend (Anthropic, OpenAI, Pi, or other agents) while preserving provider-specific features.
 
 ## 🎯 Current Status
 
-**MVP Progress: ~50% Complete**
+**Core Features: Complete** ✅
 
-✅ **Phase 1-4 Complete:**
+✅ **Implemented:**
 - Core type system (ACP protocol, pipeline types)
 - Node-based architecture (Rete.js)
 - Graph engine with hot-reload
-- Transport layer (stdio JSON-RPC)
-- CLI server with graph execution
+- Multi-protocol transport (ACP stdio, ACP HTTP+SSE, **Pi RPC stdio**)
+- Three adapter pipelines: Anthropic, OpenAI, **Pi**
 - Session management
+- Bidirectional protocol bridging
 
-🔄 **In Progress:**
-- Additional node implementations (Anthropic, OpenAI adapters)
+🔄 **Optional Enhancements:**
 - Full Rete.js visual editor integration
-- HTTP transport with SSE
+- Test suite
+- Additional adapters
 
 ## 🚀 Quick Start
 
@@ -40,18 +41,25 @@ pnpm -r build
 
 ### Run the Server
 
-**Option 1: stdio (for CLI tools)**
+Acphast supports three transport modes:
+
+**Option 1: ACP over stdio (default)**
 ```bash
 pnpm --filter @acphast/cli start
+# Speaks ACP JSON-RPC over stdin/stdout
 ```
 
-**Option 2: HTTP (for web apps)**
+**Option 2: ACP over HTTP+SSE**
 ```bash
-# Start HTTP server on port 6809
-TRANSPORT=http pnpm --filter @acphast/cli start
-
-# Or with Anthropic API key
 TRANSPORT=http ANTHROPIC_API_KEY=sk-ant-... pnpm --filter @acphast/cli start
+# HTTP server on port 6809 with Server-Sent Events for streaming
+```
+
+**Option 3: Pi RPC over stdio (NEW)**
+```bash
+pnpm --filter @acphast/cli start --pi-rpc
+# Speaks Pi's JSON-RPC protocol - drop-in Pi replacement
+# Routes Pi commands to any backend (Anthropic, OpenAI, etc.)
 ```
 
 ### Try the Web Chat Demo
@@ -94,28 +102,122 @@ acphast/
 
 ## 🏗️ Architecture
 
-### Node-Based Pipeline
+### System Overview
 
-All components are **visual Rete nodes** that process **RxJS observables**:
-
+```mermaid
+init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+graph TB
+    Client["Client Application"]
+    Transport["Transport Layer<br/>stdio | HTTP | Pi RPC"]
+    Engine["Graph Engine<br/>Rete.js"]
+    Nodes["Node Pipeline<br/>Translator → Client → Normalizer"]
+    Backends["Backends<br/>Anthropic | OpenAI | Pi"]
+    
+    Client -->|JSON-RPC| Transport
+    Transport -->|Observable Stream| Engine
+    Engine -->|RxJS Pipeline| Nodes
+    Nodes -->|API Calls| Backends
+    Backends -->|Streaming Response| Nodes
+    Nodes -->|Observable| Engine
+    Engine -->|JSON-RPC| Transport
+    Transport -->|Response| Client
 ```
-ACPReceiver → Router → [Adapters] → Responder
-                 │
-         ┌───────┼───────┐
-         ▼       ▼       ▼
-     Anthropic OpenAI  Ollama
+
+### Transport Modes
+
+```mermaid
+init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+graph LR
+    subgraph "ACP Stdio"
+        A1["Client"] -->|"ACP JSON-RPC"| A2["stdin"]
+        A2 --> A3["Acphast"]
+        A3 --> A4["stdout"]
+        A4 -->|"ACP JSON-RPC"| A1
+    end
+    
+    subgraph "ACP HTTP+SSE"
+        B1["Browser"] -->|"POST /rpc"| B2["HTTP Server"]
+        B2 --> B3["Acphast"]
+        B3 -->|"SSE /events/:id"| B1
+    end
+    
+    subgraph "Pi RPC Stdio"
+        C1["Pi Client"] -->|"Pi JSON-RPC"| C2["stdin"]
+        C2 --> C3["Acphast<br/>(Pi Transport)"]
+        C3 --> C4["stdout"]
+        C4 -->|"Pi JSON-RPC"| C1
+    end
 ```
 
-### Node Types
+### Node Pipeline Architecture
 
-- **AcphastNode**: Base class with `process()` method
-- **StreamingNode**: For LLM adapters with streaming
-- **RouterNode**: Conditional routing logic
+```mermaid
+init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+graph LR
+    Request["ACP Request"] --> Trans["Translator Node<br/>ACP → Backend Format"]
+    Trans --> Client["Client Node<br/>Call API + Stream Events"]
+    Client --> Norm["Normalizer Node<br/>Backend → ACP Format"]
+    Norm --> Response["ACP Response"]
+    
+    style Trans fill:#808080,color:#000000
+    style Client fill:#808080,color:#000000
+    style Norm fill:#808080,color:#000000
+```
 
-### Transport
+**Available Pipelines:**
+- **Anthropic**: `AnthropicTranslator → AnthropicClient → ResponseNormalizer`
+- **OpenAI**: `OpenAITranslator → OpenAIClient → OpenAINormalizer`
+- **Pi**: `PiTranslator → PiClient → PiNormalizer`
 
-- **Stdio**: Line-delimited JSON-RPC over stdin/stdout (✅ Complete)
-- **HTTP**: POST `/rpc` + SSE `/events/:id` (⏳ In progress)
+### Pi Integration Architecture
+
+```mermaid
+init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+graph TB
+    subgraph "Input: Pi RPC → Acphast"
+        I1["Pi RPC Client"] -->|"Pi JSON-RPC stdin"| I2["PiRpcTransport"]
+        I2 -->|"Convert to ACP"| I3["Acphast Engine"]
+        I3 -->|"Route to Backend"| I4["Anthropic/OpenAI/etc"]
+    end
+    
+    subgraph "Output: Acphast → Pi RPC"
+        O1["Acphast Engine"] -->|"ACP Request"| O2["PiTranslator"]
+        O2 --> O3["PiClient"]
+        O3 -->|"Spawn pi --mode rpc"| O4["Pi Process"]
+        O4 -->|"JSON-RPC stdio"| O3
+        O3 --> O5["PiNormalizer"]
+        O5 -->|"ACP Response"| O1
+    end
+```
+
+**Bidirectional Support:**
+- **Input**: Accept Pi RPC commands, route to any backend
+- **Output**: Call Pi as a backend via its RPC interface
+
+### Node Class Hierarchy
+
+```mermaid
+init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+classDiagram
+    AcphastNode <|-- StreamingNode
+    AcphastNode <|-- RouterNode
+    AcphastNode : +process(inputs, ctx)
+    AcphastNode : +validate()
+    AcphastNode : +onAdded()
+    AcphastNode : +onRemoved()
+    
+    StreamingNode : +processStream(message, ctx)
+    StreamingNode : +sendUpdate(ctx, update)
+    
+    StreamingNode <|-- AnthropicClientNode
+    StreamingNode <|-- OpenAIClientNode
+    StreamingNode <|-- PiClientNode
+    
+    AcphastNode <|-- TranslatorNode
+    TranslatorNode <|-- AnthropicTranslatorNode
+    TranslatorNode <|-- OpenAITranslatorNode
+    TranslatorNode <|-- PiTranslatorNode
+```
 
 ## 🎨 Current Graph
 
@@ -185,31 +287,67 @@ All logs go to stderr (stdout is reserved for JSON-RPC).
 - **Build Time**: ~2.5s
 - **Node Types**: 1 (ACPPassthrough, more coming)
 
+## 💎 Pi Integration Examples
+
+### Drop-in Pi Replacement
+
+Run Acphast as a Pi replacement that routes to Anthropic:
+
+```bash
+# Start Acphast in Pi RPC mode
+ANTHROPIC_API_KEY=sk-ant-... pnpm --filter @acphast/cli start --pi-rpc
+
+# In another terminal, send Pi RPC commands
+echo '{"type":"prompt","id":"1","message":"Hello!"}' | nc localhost -
+```
+
+### Call Pi from Acphast
+
+Use Pi as a backend in an Acphast pipeline:
+
+```typescript
+import { PiTranslatorNode, PiClientNode, PiNormalizerNode } from '@acphast/nodes';
+
+const pipeline = [
+  new PiTranslatorNode({ 
+    defaultThinkingLevel: 'high',
+    defaultProvider: 'anthropic',
+    defaultModel: 'claude-3-5-sonnet-20241022'
+  }),
+  new PiClientNode({ 
+    cwd: '/path/to/project',
+    sessionPath: './session.json'
+  }),
+  new PiNormalizerNode()
+];
+```
+
+### Protocol Bridging
+
+Accept Pi RPC, route to OpenAI:
+
+```bash
+# Configure Acphast to use OpenAI backend
+OPENAI_API_KEY=sk-... pnpm --filter @acphast/cli start --pi-rpc
+
+# Pi clients now talk to OpenAI instead!
+```
+
 ## 🗺️ Roadmap
 
-### Phase 5: Additional Nodes (20% complete)
-- [ ] Anthropic adapter
-- [ ] OpenAI adapter  
-- [ ] Router nodes
-- [x] ACP passthrough
+### Core Features ✅ COMPLETE
+- [x] Multi-protocol transport (ACP stdio, HTTP, Pi RPC)
+- [x] Three adapter pipelines (Anthropic, OpenAI, Pi)
+- [x] Bidirectional protocol bridging
+- [x] Graph engine with hot-reload
+- [x] Session management
 
-### Phase 6: CLI Enhancements
-- [x] Basic server with graph execution
-- [ ] Command-line arguments
+### Optional Enhancements
+- [ ] Visual graph editor (Rete.js UI)
+- [ ] Test suite (unit + integration)
+- [ ] Additional adapters (Ollama, etc.)
+- [ ] Router nodes for conditional routing
 - [ ] Config file loading
-- [ ] Multiple transport modes
-
-### Phase 7: Visual Editor (0%)
-- [ ] Full Rete.js integration
-- [ ] Drag-and-drop node creation
-- [ ] Live graph editing
-- [ ] Node configuration UI
-
-### Phase 8: Testing & Docs
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] API documentation
-- [ ] User guides
 
 ## 📄 License
 
@@ -223,4 +361,5 @@ This project is in active development. Contributions welcome!
 
 - [Architecture](docs/RETE-NODE-ARCHITECTURE.md) - Node-based architecture design
 - [Specification](docs/ACPHAST-README.md) - Full ACP proxy specification
+- [Pi API Module](ACPHAST-PI-API-MODULE.md) - Complete Pi RPC integration specification
 - [Implementation Progress](docs/IMPLEMENTATION-PROGRESS.md) - Detailed progress tracker
