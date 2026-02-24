@@ -110,7 +110,7 @@ graph TB
     Client["Client Application"]
     Transport["Transport Layer<br/>stdio | HTTP | Pi RPC"]
     Engine["Graph Engine<br/>Rete.js"]
-    Nodes["Node Pipeline<br/>Translator → Client → Normalizer"]
+    Nodes["Node Pipeline<br/>Translator, Client, Normalizer"]
     Backends["Backends<br/>Anthropic | OpenAI | Pi"]
     
     Client -->|JSON-RPC| Transport
@@ -154,9 +154,9 @@ graph LR
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}}%%
 graph LR
-    Request["ACP Request"]
+    Request["ACP Request"] --> Trans["Translator Node<br/>ACP to Backend Format"]
     Trans --> Client["Client Node<br/>Call API + Stream Events"]
-    Client --> Norm["Normalizer Node<br/>Backend → ACP Format"]
+    Client --> Norm["Normalizer Node<br/>Backend to ACP Format"]
     Norm --> Response["ACP Response"]
     
     style Trans fill:#808080,color:#000000
@@ -174,13 +174,13 @@ graph LR
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}}%%
 graph TB
-    subgraph "Input: Pi RPC
+    subgraph "Input: Pi RPC to Acphast"
         I1["Pi RPC Client"] -->|"Pi JSON-RPC stdin"| I2["PiRpcTransport"]
         I2 -->|"Convert to ACP"| I3["Acphast Engine"]
         I3 -->|"Route to Backend"| I4["Anthropic/OpenAI/etc"]
     end
     
-    subgraph "Output: Acphast → Pi RPC"
+    subgraph "Output: Acphast to Pi RPC"
         O1["Acphast Engine"] -->|"ACP Request"| O2["PiTranslator"]
         O2 --> O3["PiClient"]
         O3 -->|"Spawn pi --mode rpc"| O4["Pi Process"]
