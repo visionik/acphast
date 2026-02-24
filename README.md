@@ -105,7 +105,7 @@ acphast/
 ### System Overview
 
 ```mermaid
-init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+%%{init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}}%%
 graph TB
     Client["Client Application"]
     Transport["Transport Layer<br/>stdio | HTTP | Pi RPC"]
@@ -126,7 +126,7 @@ graph TB
 ### Transport Modes
 
 ```mermaid
-init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+%%{init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}}%%
 graph LR
     subgraph "ACP Stdio"
         A1["Client"] -->|"ACP JSON-RPC"| A2["stdin"]
@@ -152,9 +152,9 @@ graph LR
 ### Node Pipeline Architecture
 
 ```mermaid
-init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+%%{init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}}%%
 graph LR
-    Request["ACP Request"] --> Trans["Translator Node<br/>ACP → Backend Format"]
+    Request["ACP Request"]
     Trans --> Client["Client Node<br/>Call API + Stream Events"]
     Client --> Norm["Normalizer Node<br/>Backend → ACP Format"]
     Norm --> Response["ACP Response"]
@@ -172,9 +172,9 @@ graph LR
 ### Pi Integration Architecture
 
 ```mermaid
-init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+%%{init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}}%%
 graph TB
-    subgraph "Input: Pi RPC → Acphast"
+    subgraph "Input: Pi RPC
         I1["Pi RPC Client"] -->|"Pi JSON-RPC stdin"| I2["PiRpcTransport"]
         I2 -->|"Convert to ACP"| I3["Acphast Engine"]
         I3 -->|"Route to Backend"| I4["Anthropic/OpenAI/etc"]
@@ -197,7 +197,7 @@ graph TB
 ### Node Class Hierarchy
 
 ```mermaid
-init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}
+%%{init: {"theme":"base","themeVariables":{"primaryTextColor":"#000000","secondaryTextColor":"#000000","tertiaryTextColor":"#000000","noteTextColor":"#000000","primaryColor":"#909090","secondaryColor":"#808080","tertiaryColor":"#707070","lineColor":"#404040","actorLineColor":"#404040","signalColor":"#404040"}}}%%
 classDiagram
     AcphastNode <|-- StreamingNode
     AcphastNode <|-- RouterNode
